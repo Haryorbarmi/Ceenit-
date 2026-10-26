@@ -5,18 +5,19 @@ import { OptionChip } from '@/components/Chips';
 import { Input } from '@/components/Input';
 import { Note, Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
-import { seller } from '@/data/mock';
 import { parseAmount } from '@/lib/format';
 import { expiryOptions, useLinks } from '@/state/links';
+import { useSession } from '@/state/session';
 import { spacing } from '@/theme/tokens';
 
 export default function NewLink() {
   const { draft, setDraft } = useLinks();
+  const { me } = useSession();
   const valid = draft.item.trim().length > 1 && parseAmount(draft.amount) > 0;
 
   const next = () => {
     // After the 5th confirmed transaction on the Free plan, creating links needs a subscription.
-    if (seller.freeUsed >= seller.freeTotal) router.push('/free-limit');
+    if (me && me.plan === 'free' && me.freeUsed >= me.freeTotal) router.push('/free-limit');
     else router.push('/preview');
   };
 

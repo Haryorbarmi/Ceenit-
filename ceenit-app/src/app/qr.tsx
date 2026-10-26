@@ -10,9 +10,9 @@ import { color, radius, spacing } from '@/theme/tokens';
 
 export default function QrScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const link = useLinks().getLink(String(id));
+  const link = useLinks().getInvoice(String(id));
   if (!link) return null;
-  const url = `https://${link.url}`;
+  const url = link.url;
 
   return (
     <Screen
@@ -26,14 +26,14 @@ export default function QrScreen() {
     >
       <View style={{ alignItems: 'center', gap: spacing.xs }}>
         <Text variant="h3" align="center">Let your buyer scan this</Text>
-        <Text variant="bodySmall" tone="secondary" align="center">{link.item} · {formatUsdt(link.total)} USDT</Text>
+        <Text variant="bodySmall" tone="secondary" align="center">{link.item} · {formatUsdt(Number(link.amount))} USDT</Text>
       </View>
       <View style={styles.qrWrap}>
         <View style={styles.qr}>
           <QRCode value={url} size={220} color={color.textPrimary} backgroundColor={color.bgPage} />
         </View>
       </View>
-      <Text variant="bodyMedium" align="center">{link.url}</Text>
+      <Text variant="bodyMedium" align="center">{link.url.replace(/^https?:\/\//, '')}</Text>
       <Text variant="bodySmall" tone="tertiary" align="center">Opens the payment page. The buyer pays from their own wallet.</Text>
     </Screen>
   );

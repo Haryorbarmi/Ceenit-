@@ -7,15 +7,16 @@ import { StatusChip } from '@/components/Chips';
 import { Icon } from '@/components/Icon';
 import { Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
-import { seller } from '@/data/mock';
+import { useSession } from '@/state/session';
 import { formatCountdown, formatUsdt } from '@/lib/format';
-import { useLinks } from '@/state/links';
+import { statusOf, useLinks } from '@/state/links';
 import { color, radius, spacing, tone } from '@/theme/tokens';
 
 export default function LinkReady() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { getLink } = useLinks();
-  const link = getLink(String(id));
+  const { getInvoice } = useLinks();
+  const { me } = useSession();
+  const link = getInvoice(String(id));
   const [now, setNow] = useState(Date.now());
   const [copied, setCopied] = useState(false);
 
@@ -32,11 +33,12 @@ export default function LinkReady() {
     );
   }
 
-  const remaining = formatCountdown(link.expiresAt, now);
-  const message = `${seller.shop}: please pay ${formatUsdt(link.total)} USDT (TRON TRC20) for ${link.item}.\nhttps://${link.url}`;
+  const status = statusOf(link);
+  const remaining = status === 'Pending' ? formatCountdown(new Date(link.expiresAt).getTime(), now) : null;
+  const message = `${me?.shopName}: please pay ${formatUsdt(Number(link.amount))} USDT (TRON TRC20) for ${link.item}.\n${link.url}`;
 
   const copy = async () => {
-    await Clipboard.setStringAsync(`https://${link.url}`);
+    await Clipboard.setStringAsync(link.url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -66,17 +68,17 @@ export default function LinkReady() {
       <View style={styles.center}>
         <View style={styles.check}><Icon name="check" size={36} tone="inverse" /></View>
         <Text variant="h2" align="center">Share it with your buyer</Text>
-        <Text tone="secondary" align="center">{link.item} · {formatUsdt(link.total)} USDT</Text>
+        <Text tone="secondary" align="center">{link.item} · {formatUsdt(Number(link.amount))} USDT</Text>
       </View>
 
       <View style={styles.linkCard}>
-        <Text variant="bodyMedium">{link.url}</Text>
+        <Text variant="bodyMedium">{link.url.replace(/^https?:\/\//, '')}</Text>
         <Icon name={copied ? 'check' : 'copy'} size={20} />
       </View>
 
       <View style={styles.status}>
-        {remaining ? <StatusChip status="Pending" /> : <StatusChip status="Expired" />}
-        <Text variant="bodySmall" tone="tertiary">{remaining ? `Expires in ${remaining}` : 'This link has expired'}</Text>
+        <StatusChip status={status} />
+        <Text variant="bodySmall" tone="tertiary">{status === 'Paid' ? 'Payment confirmed on TRON' : status === 'Expired' ? 'This link has expired' : status === 'Needs attention' ? 'A payment needs your review' : remaining ? `Expires in ${remaining}` : 'Waiting for payment'}</Text>
       </View>
 
       <Text variant="bodySmall" tone="tertiary" align="center">

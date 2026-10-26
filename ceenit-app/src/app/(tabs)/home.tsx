@@ -1,87 +1,135 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, RefreshControl, StyleSheet, View } from 'react-native';
+import { useState } from 'react';
+import { router } from 'expo-router';
+import { Button } from '@/components/Button';
 import { Icon } from '@/components/Icon';
 import { Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
 import { TxnRow } from '@/components/TxnRow';
-import { seller } from '@/data/mock';
+import { formatNaira, formatUsdt } from '@/lib/format';
 import { useLinks } from '@/state/links';
-import { router } from 'expo-router';
+import { useSession } from '@/state/session';
 import { color, radius, spacing, tone } from '@/theme/tokens';
 
 function SectionHead({ title, action }: { title: string; action?: string }) {
   return (
     <View style={styles.sectionHead}>
       <Text variant="h3">{title}</Text>
-      {action ? <Text variant="label" tone="secondary">{action}</Text> : null}
+      {action ? <Text variant="label" tone="secondary" onPress={() => router.push('/(tabs)/history')}>{action}</Text> : null}
     </View>
   );
 }
 
+const greeting = () => {
+  const h = new Date().getHours();
+  return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+};
+
 export default function Home() {
-  const { txns } = useLinks();
+  const { me } = useSession();
+  const { txns, invoices, requests, totals, loading, refresh } = useLinks();
+  const [pulling, setPulling] = useState(false);
   const pending = txns.filter((t) => t.status === 'Pending');
-  const recent = txns.filter((t) => t.status === 'Paid');
+  const recent = txns.filter((t) => t.status === 'Paid').slice(0, 5);
   const attention = txns.filter((t) => t.status === 'Needs attention');
+  const freePlan = me?.plan === 'free';
+  const firstName = me?.fullName.split(' ')[0] ?? '';
 
   return (
-    <Screen>
+    <Screen
+      refreshControl={
+        <RefreshControl refreshing={pulling} onRefresh={async () => { setPulling(true); await refresh(); setPulling(false); }} />
+      }
+    >
       <View style={styles.header}>
         <View style={{ gap: spacing.xxs }}>
-          <Text variant="bodySmall" tone="tertiary">Good morning, {seller.name}</Text>
-          <Text variant="h3">{seller.shop}</Text>
+          <Text variant="bodySmall" tone="tertiary">{greeting()}, {firstName}</Text>
+          <Text variant="h3">{me?.shopName ?? ''}</Text>
         </View>
         <View style={styles.bell}>
           <Icon name="bell" size={22} />
-          <View style={styles.badge} />
+          {requests.length || attention.length ? <View style={styles.badge} /> : null}
         </View>
       </View>
 
       <View style={styles.summary}>
         <Text variant="bodySmall" tone="muted">Total received</Text>
         <View style={{ gap: spacing.xxs }}>
-          <Text variant="h1" tone="inverse">{seller.totalReceived} USDT</Text>
-          <Text variant="caption" tone="muted">{seller.naira}</Text>
+          <Text variant="h1" tone="inverse">{formatUsdt(totals.received)} USDT</Text>
+          <Text variant="caption" tone="muted">
+            {totals.received > 0 ? `≈ ${formatNaira(totals.received)} · naira is an estimate` : 'Your payments will show here'}
+          </Text>
         </View>
         <View style={styles.stats}>
           <View style={{ flex: 1, gap: spacing.xxs }}>
             <Text variant="caption" tone="muted">Paid</Text>
-            <Text variant="h3" tone="inverse">{seller.paid}</Text>
+            <Text variant="h3" tone="inverse">{totals.paid}</Text>
           </View>
           <View style={{ flex: 1, gap: spacing.xxs }}>
             <Text variant="caption" tone="muted">Pending</Text>
-            <Text variant="h3" tone="inverse">{seller.pending}</Text>
+            <Text variant="h3" tone="inverse">{totals.pending}</Text>
           </View>
         </View>
       </View>
 
-      <View style={styles.free}>
-        <View style={styles.freeRow}>
-          <Text variant="bodySmall">Free plan · {seller.freeUsed} of {seller.freeTotal} transactions used</Text>
-          <Text variant="label" onPress={() => router.push('/free-limit')}>Upgrade</Text>
+      {freePlan && me ? (
+        <View style={styles.free}>
+          <View style={styles.freeRow}>
+            <Text variant="bodySmall">Free plan · {me.freeUsed} of {me.freeTotal} transactions used</Text>
+            <Text variant="label" onPress={() => router.push('/free-limit')}>Upgrade</Text>
+          </View>
+          <View style={styles.meter}>
+            {Array.from({ length: me.freeTotal }).map((_, i) => (
+              <View key={i} style={[styles.meterBar, { backgroundColor: i < me.freeUsed ? tone.accent.solid : color.borderDefault }]} />
+            ))}
+          </View>
         </View>
-        <View style={styles.meter}>
-          {Array.from({ length: seller.freeTotal }).map((_, i) => (
-            <View key={i} style={[styles.meterBar, { backgroundColor: i < seller.freeUsed ? tone.accent.solid : color.borderDefault }]} />
-          ))}
-        </View>
-      </View>
+      ) : null}
 
-      {attention.length > 0 ? (
-        <Pressable style={styles.attention}>
-          <Icon name="alert-triangle" size={24} tone="warning" />
+      {requests.length > 0 ? (
+        <Pressable style={styles.request} onPress={() => router.push('/link-requests')}>
+          <Icon name="refresh-cw" size={24} tone="accent" />
           <View style={{ flex: 1, gap: spacing.xxs }}>
-            <Text variant="bodyMedium">{attention.length} late payment needs attention</Text>
-            <Text variant="bodySmall" tone="secondary">Chidi paid after the link expired</Text>
+            <Text variant="bodyMedium">{requests.length} new link {requests.length === 1 ? 'request' : 'requests'}</Text>
+            <Text variant="bodySmall" tone="secondary">{requests[0]!.buyerName || 'A buyer'} wants a fresh link for {requests[0]!.item}</Text>
           </View>
           <Icon name="chevron-right" size={20} />
         </Pressable>
       ) : null}
 
-      <SectionHead title="Pending" action="See all" />
-      <View>{pending.map((t) => <TxnRow key={t.id} txn={t} />)}</View>
+      {attention.length > 0 ? (
+        <Pressable style={styles.attention} onPress={() => router.push({ pathname: '/invoice/[id]', params: { id: attention[0]!.id } })}>
+          <Icon name="alert-triangle" size={24} tone="warning" />
+          <View style={{ flex: 1, gap: spacing.xxs }}>
+            <Text variant="bodyMedium">{attention.length} {attention.length === 1 ? 'payment needs' : 'payments need'} attention</Text>
+            <Text variant="bodySmall" tone="secondary">{attention[0]!.item} · {attention[0]!.sub}</Text>
+          </View>
+          <Icon name="chevron-right" size={20} />
+        </Pressable>
+      ) : null}
 
-      <SectionHead title="Recent payments" action="See all" />
-      <View>{recent.map((t) => <TxnRow key={t.id} txn={t} />)}</View>
+      {!loading && invoices.length === 0 ? (
+        <View style={styles.empty}>
+          <View style={styles.emptyIcon}><Icon name="file-text" size={32} tone="accent" /></View>
+          <Text variant="h3">No payments yet</Text>
+          <Text tone="secondary" align="center">Create a payment link for your first sale and share it on WhatsApp.</Text>
+          <Button label="Create payment link" onPress={() => router.push('/(tabs)/new')} style={{ alignSelf: 'stretch' }} />
+        </View>
+      ) : null}
+
+      {pending.length > 0 ? (
+        <>
+          <SectionHead title="Pending" action="See all" />
+          <View>{pending.map((t) => <TxnRow key={t.id} txn={t} onPress={() => router.push({ pathname: '/invoice/[id]', params: { id: t.id } })} />)}</View>
+        </>
+      ) : null}
+
+      {recent.length > 0 ? (
+        <>
+          <SectionHead title="Recent payments" action="See all" />
+          <View>{recent.map((t) => <TxnRow key={t.id} txn={t} onPress={() => router.push({ pathname: '/invoice/[id]', params: { id: t.id } })} />)}</View>
+        </>
+      ) : null}
     </Screen>
   );
 }
@@ -96,6 +144,9 @@ const styles = StyleSheet.create({
   freeRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   meter: { flexDirection: 'row', gap: spacing.xxs },
   meterBar: { flex: 1, height: 6, borderRadius: 3 },
+  request: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.md, borderRadius: radius.lg, borderWidth: 1, borderColor: tone.accent.border, backgroundColor: tone.accent.bg },
   attention: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.md, borderRadius: radius.lg, borderWidth: 1, borderColor: tone.warning.border, backgroundColor: tone.warning.bg },
+  empty: { alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.lg },
+  emptyIcon: { width: 72, height: 72, borderRadius: 36, backgroundColor: tone.accent.bg, alignItems: 'center', justifyContent: 'center' },
   sectionHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: spacing.xs },
 });

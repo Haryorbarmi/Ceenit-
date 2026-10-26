@@ -65,8 +65,12 @@ describe('matching a payment to an invoice', () => {
     assert.deepEqual(classify({ receivedMicro: 1_250_000_000n, atMs: now, invoices, lateWindowMs: day }), { kind: 'underpaid', invoiceId: 'a' });
     assert.deepEqual(classify({ receivedMicro: 99_000_000n, atMs: now, invoices, lateWindowMs: day }), { kind: 'unmatched' });
   });
-  it('a payment made before the link existed does not match it', () => {
-    const i = inv('a', 8_000_370_000n, { createdAtMs: now + 1000 });
+  it('a payment a few seconds before the link time still matches, because clocks differ', () => {
+    const i = inv('a', 8_000_370_000n, { createdAtMs: now + 5000 });
+    assert.deepEqual(classify({ receivedMicro: 8_000_370_000n, atMs: now, invoices: [i], lateWindowMs: day }), { kind: 'paid', invoiceId: 'a' });
+  });
+  it('a payment made well before the link existed does not match it', () => {
+    const i = inv('a', 8_000_370_000n, { createdAtMs: now + 10 * 60_000 });
     assert.deepEqual(classify({ receivedMicro: 8_000_370_000n, atMs: now, invoices: [i], lateWindowMs: day }), { kind: 'unmatched' });
   });
   it('a link already being confirmed is not matched twice', () => {

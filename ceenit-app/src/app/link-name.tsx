@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import { Button } from '@/components/Button';
@@ -6,6 +7,7 @@ import { Input } from '@/components/Input';
 import { Progress, Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
 import { reservedLinkNames } from '@/data/mock';
+import { api } from '@/lib/api';
 import { color, radius, spacing, tone } from '@/theme/tokens';
 import { useOnboarding } from '@/state/onboarding';
 
@@ -16,13 +18,23 @@ export default function LinkName() {
   const name = data.linkName;
   const reserved = reservedLinkNames.includes(name);
   const valid = rule.test(name) && !reserved;
-  const error = name && !valid ? (reserved ? 'That name is not available.' : 'Use 3 to 30 lowercase letters, numbers or hyphens.') : undefined;
+  // Asks the API whether someone already has this name. 'checking' keeps Continue off until the answer arrives.
+  const [taken, setTaken] = useState<'checking' | boolean>(false);
+  useEffect(() => {
+    if (!valid) return setTaken(false);
+    setTaken('checking');
+    let stale = false;
+    const t = setTimeout(() => api.linkNameAvailable(name).then((r) => !stale && setTaken(!r.available)).catch(() => !stale && setTaken(false)), 350);
+    return () => { stale = true; clearTimeout(t); };
+  }, [name, valid]);
+  const available = valid && taken === false;
+  const error = name && !valid ? (reserved ? 'That name is not available.' : 'Use 3 to 30 lowercase letters, numbers or hyphens.') : valid && taken === true ? 'Someone already uses this name. Try another.' : undefined;
   const initial = (data.shopName || 'E').trim()[0]?.toUpperCase() ?? 'E';
 
   return (
     <Screen
       title="Step 2 of 4"
-      footer={<Button label="Continue" disabled={!valid} onPress={() => router.push('/wallet')} />}
+      footer={<Button label="Continue" disabled={!available} onPress={() => router.push('/wallet')} />}
     >
       <Progress step={2} />
       <Text variant="h2">Choose your link name</Text>
@@ -38,7 +50,7 @@ export default function LinkName() {
         error={error}
         autoFocus
       />
-      {valid ? (
+      {available ? (
         <View style={styles.avail}>
           <Icon name="check" size={18} tone="success" />
           <Text variant="label" tone="success">Available</Text>

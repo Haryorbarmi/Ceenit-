@@ -16,6 +16,8 @@ type Props = {
   /** Hide the back button (first screens). */
   noBack?: boolean;
   scroll?: boolean;
+  /** Pull-to-refresh, for list screens. */
+  refreshControl?: React.ReactElement<any>;
 };
 
 export function TopBar({ title, light }: { title?: string; light?: boolean }) {
@@ -37,7 +39,7 @@ export function TopBar({ title, light }: { title?: string; light?: boolean }) {
   );
 }
 
-export function Screen({ children, title, footer, background = color.bgPage, noBack, scroll = true }: Props) {
+export function Screen({ children, title, footer, background = color.bgPage, noBack, scroll = true, refreshControl }: Props) {
   const Body = scroll ? ScrollView : View;
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: background }]} edges={['top', 'bottom']}>
@@ -46,7 +48,7 @@ export function Screen({ children, title, footer, background = color.bgPage, noB
         <Body
           style={{ flex: 1 }}
           {...(scroll
-            ? { contentContainerStyle: styles.content, keyboardShouldPersistTaps: 'handled' as const, showsVerticalScrollIndicator: false }
+            ? { contentContainerStyle: styles.content, keyboardShouldPersistTaps: 'handled' as const, showsVerticalScrollIndicator: false, refreshControl }
             : {})}
         >
           {scroll ? children : <View style={styles.content}>{children}</View>}

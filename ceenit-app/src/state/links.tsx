@@ -1,9 +1,12 @@
-import { createContext, ReactNode, useCallback, useContext, useMemo, useState } from 'react';
-import { Txn, txns as seedTxns } from '@/data/mock';
-import { formatUsdt, parseAmount } from '@/lib/format';
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { AppState } from 'react-native';
+import type { Status } from '@/components/Chips';
+import { api, Invoice, LinkRequest } from '@/lib/api';
+import { formatUsdt } from '@/lib/format';
+import { useSession } from '@/state/session';
 
-// Payment links created in this session. Kept in memory for now.
-// The real version stores these on the backend and the blockchain watcher updates their status.
+// The seller's payment links, loaded from the Ceenit API. The blockchain watcher on the server moves
+// each link from Pending to Paid, so the app just asks again every few seconds while it is open.
 
 export const expiryOptions = [
   { label: '15 min', minutes: 15 },
@@ -14,92 +17,117 @@ export const expiryOptions = [
 
 export type Draft = { item: string; amount: string; reference: string; expiry: string };
 
-export type LinkInfo = {
+export type Txn = {
   id: string;
   item: string;
-  reference: string;
-  baseAmount: number;
-  cents: number;
-  total: number;
-  expiryLabel: string;
-  createdAt: number;
-  expiresAt: number;
-  url: string;
+  sub: string;
+  amount: string;
+  status: Status;
+  group: 'Today' | 'Earlier';
 };
 
+const POLL_MS = 5000;
+
+const time = (iso: string) => new Date(iso).toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true });
+const sameDay = (iso: string) => new Date(iso).toDateString() === new Date().toDateString();
+const commas = (amount: string) => formatUsdt(Number(amount));
+
+const flagText = { late: 'Late payment', underpaid: 'Underpaid', overpaid: 'Overpaid' } as const;
+
+export function statusOf(i: Invoice): Status {
+  if (i.status === 'paid') return 'Paid';
+  if (i.status === 'expired') return 'Expired';
+  if (i.status === 'late' || i.status === 'underpaid' || i.status === 'overpaid') return 'Needs attention';
+  return 'Pending';
+}
+
+function toTxn(i: Invoice): Txn {
+  const ref = i.reference ? `${i.reference} · ` : '';
+  const status = statusOf(i);
+  const sub =
+    status === 'Paid' ? `${ref}${time(i.paidAt ?? i.createdAt)}`
+    : status === 'Expired' ? `${ref}expired unpaid`
+    : status === 'Needs attention' ? `${flagText[i.status as keyof typeof flagText]} · ${time(i.createdAt)}`
+    : i.status === 'confirming' ? `${ref}payment found, confirming`
+    : `${ref}expires ${time(i.expiresAt)}`;
+  return { id: i.id, item: i.item, sub, amount: commas(i.amount), status, group: sameDay(i.createdAt) ? 'Today' : 'Earlier' };
+}
+
 type Ctx = {
+  loading: boolean;
+  invoices: Invoice[];
   txns: Txn[];
+  requests: LinkRequest[];
+  totals: { received: number; paid: number; pending: number };
   draft: Draft;
   setDraft: (patch: Partial<Draft>) => void;
-  /** A cents value (1 to 99) not used by another open link of the same base amount, or null if all are taken. */
-  pickCents: (baseAmount: number) => number | null;
-  createLink: (draft: Draft, cents: number) => LinkInfo;
-  getLink: (id: string) => LinkInfo | undefined;
+  refresh: () => Promise<void>;
+  createLink: (draft: Draft) => Promise<Invoice>;
+  getInvoice: (id: string) => Invoice | undefined;
 };
 
 const emptyDraft: Draft = { item: '', amount: '', reference: '', expiry: '30 min' };
 const LinksContext = createContext<Ctx | null>(null);
 
 export function LinksProvider({ children }: { children: ReactNode }) {
-  const [txns, setTxns] = useState<Txn[]>(seedTxns);
-  const [links, setLinks] = useState<Record<string, LinkInfo>>({});
+  const { status } = useSession();
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [requests, setRequests] = useState<LinkRequest[]>([]);
+  const [loading, setLoading] = useState(true);
   const [draft, setDraftState] = useState<Draft>(emptyDraft);
+  const busy = useRef(false);
 
   const setDraft = useCallback((patch: Partial<Draft>) => setDraftState((d) => ({ ...d, ...patch })), []);
 
-  const pickCents = useCallback(
-    (baseAmount: number) => {
-      const now = Date.now();
-      const used = new Set(
-        Object.values(links)
-          .filter((l) => l.baseAmount === baseAmount && l.expiresAt > now)
-          .map((l) => l.cents),
-      );
-      const free = Array.from({ length: 99 }, (_, i) => i + 1).filter((c) => !used.has(c));
-      return free.length ? free[Math.floor(Math.random() * free.length)] : null;
-    },
-    [links],
-  );
-
-  const createLink = useCallback((d: Draft, cents: number): LinkInfo => {
-    const base = parseAmount(d.amount);
-    const total = Math.round((base + cents / 100) * 100) / 100;
-    const minutes = expiryOptions.find((e) => e.label === d.expiry)?.minutes ?? 30;
-    const id = Math.random().toString(36).slice(2, 7);
-    const now = Date.now();
-    const link: LinkInfo = {
-      id,
-      item: d.item.trim(),
-      reference: d.reference.trim(),
-      baseAmount: base,
-      cents,
-      total,
-      expiryLabel: d.expiry,
-      createdAt: now,
-      expiresAt: now + minutes * 60_000,
-      url: `ceenit.app/pay/${id}`,
-    };
-    setLinks((l) => ({ ...l, [id]: link }));
-    setTxns((t) => [
-      {
-        id,
-        item: link.item,
-        sub: `${link.reference || 'Waiting for payment'} · expires in ${d.expiry}`,
-        amount: formatUsdt(total),
-        status: 'Pending',
-        group: 'Today',
-      },
-      ...t,
-    ]);
-    setDraftState(emptyDraft);
-    return link;
+  const refresh = useCallback(async () => {
+    if (busy.current) return;
+    busy.current = true;
+    try {
+      const [inv, req] = await Promise.all([api.invoices(), api.linkRequests()]);
+      setInvoices(inv);
+      setRequests(req);
+    } catch {
+      /* keep showing the last list if the network drops */
+    } finally {
+      busy.current = false;
+      setLoading(false);
+    }
   }, []);
 
-  const getLink = useCallback((id: string) => links[id], [links]);
+  useEffect(() => {
+    if (status !== 'in') {
+      setInvoices([]);
+      setRequests([]);
+      return;
+    }
+    refresh();
+    const t = setInterval(() => AppState.currentState === 'active' && refresh(), POLL_MS);
+    return () => clearInterval(t);
+  }, [status, refresh]);
+
+  const createLink = useCallback(async (d: Draft) => {
+    const minutes = expiryOptions.find((e) => e.label === d.expiry)?.minutes ?? 30;
+    const created = await api.createInvoice({ item: d.item.trim(), amount: d.amount.replace(/,/g, ''), reference: d.reference.trim() || undefined, expiryMinutes: minutes });
+    setInvoices((list) => [created, ...list]);
+    setDraftState(emptyDraft);
+    return created;
+  }, []);
+
+  const getInvoice = useCallback((id: string) => invoices.find((i) => i.id === id), [invoices]);
+
+  const txns = useMemo(() => invoices.map(toTxn), [invoices]);
+  const totals = useMemo(() => {
+    const paid = invoices.filter((i) => i.status === 'paid');
+    return {
+      received: paid.reduce((sum, i) => sum + Number(i.amount), 0),
+      paid: paid.length,
+      pending: invoices.filter((i) => i.status === 'pending' || i.status === 'confirming').length,
+    };
+  }, [invoices]);
 
   const value = useMemo(
-    () => ({ txns, draft, setDraft, pickCents, createLink, getLink }),
-    [txns, draft, setDraft, pickCents, createLink, getLink],
+    () => ({ loading, invoices, txns, requests, totals, draft, setDraft, refresh, createLink, getInvoice }),
+    [loading, invoices, txns, requests, totals, draft, setDraft, refresh, createLink, getInvoice],
   );
   return <LinksContext.Provider value={value}>{children}</LinksContext.Provider>;
 }

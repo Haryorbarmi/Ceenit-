@@ -5,7 +5,7 @@ import { createInvoice, getSellerInvoice, listInvoices, paidCount, toSellerView 
 import { approveRequest, declineRequest, listRequests, publicInvoice, requestNewLink, resolvePayment } from '../domain/links';
 import { contactForToken, getSellerByContact, linkNameAvailable, logoutAll, registerSeller, requestCode, verifyCode } from '../domain/sellers';
 import { formatUsdt, parseUsdt } from '../money';
-import { hex20ToAddress } from '../tron/address';
+import { hex20ToAddress, isValidTronAddress } from '../tron/address';
 import type { FakeTron } from '../tron/fake';
 
 const method = z.enum(['phone', 'email']);
@@ -77,6 +77,12 @@ export function buildServer(ctx: Ctx, opts: { fake?: FakeTron } = {}) {
   app.get('/v1/link-names/:name', async (req) => {
     const { name } = z.object({ name: z.string().max(40) }).parse(req.params);
     return { name, available: await linkNameAvailable(ctx, name) };
+  });
+
+  // Lets the app check a wallet address (including its built-in checksum) before sign up reaches the last step.
+  app.get('/v1/wallets/:address/check', async (req) => {
+    const { address } = z.object({ address: z.string().max(60) }).parse(req.params);
+    return { valid: isValidTronAddress(address) };
   });
 
   // ---------- Login ----------

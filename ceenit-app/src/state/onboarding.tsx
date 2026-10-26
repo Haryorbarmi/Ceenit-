@@ -1,7 +1,6 @@
 import { createContext, ReactNode, useContext, useState } from 'react';
 
-// Holds what the seller has typed during sign up. Kept in memory only for now.
-// The real version will send this to the backend at the end of sign up.
+// Holds what the seller has typed during sign up. It is sent to the API when they finish the PIN step.
 type Onboarding = {
   method: 'phone' | 'email';
   contact: string;
@@ -11,6 +10,8 @@ type Onboarding = {
   city: string;
   linkName: string;
   wallet: string;
+  /** The login code, shown on screen only when the API is in development and has no WhatsApp sender yet. */
+  devCode: string;
 };
 
 const initial: Onboarding = {
@@ -22,6 +23,7 @@ const initial: Onboarding = {
   city: 'Lagos, Nigeria',
   linkName: '',
   wallet: '',
+  devCode: '',
 };
 
 type Ctx = { data: Onboarding; update: (patch: Partial<Onboarding>) => void };

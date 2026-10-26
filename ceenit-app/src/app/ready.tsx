@@ -5,11 +5,11 @@ import { Icon } from '@/components/Icon';
 import { Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
 import { color, radius, spacing, tone } from '@/theme/tokens';
-import { useOnboarding } from '@/state/onboarding';
+import { useSession } from '@/state/session';
 
 export default function Ready() {
-  const { data } = useOnboarding();
-  const link = `ceenit.app/${data.linkName || 'emeka-autos'}`;
+  const { me } = useSession();
+  const link = (me?.link ?? '').replace(/^https?:\/\//, '');
 
   return (
     <Screen

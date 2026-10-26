@@ -1,17 +1,23 @@
 import { Image, StyleSheet, useWindowDimensions, View } from 'react-native';
-import { router } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '@/components/Button';
 import { Text } from '@/components/Text';
 import { Wordmark } from '@/components/Wordmark';
+import { useSession } from '@/state/session';
 import { color, hues, palette, spacing } from '@/theme/tokens';
 
 // The photo sits at the top, fades into black, and a purple glow rises behind the buttons.
 export default function Welcome() {
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
+  const { status, hasPin, unlocked } = useSession();
+
+  // Already signed in: ask for the PIN, then go to the app.
+  if (status === 'in') return <Redirect href={hasPin && !unlocked ? '/unlock' : '/(tabs)/home'} />;
+  if (status === 'loading') return <View style={styles.root} />;
 
   return (
     <View style={styles.root}>
@@ -33,7 +39,7 @@ export default function Welcome() {
         <View style={styles.actions}>
           <Button inverse label="Continue with phone number" onPress={() => router.push('/phone')} />
           <Button inverse variant="outline" label="Continue with email" onPress={() => router.push('/phone')} />
-          <Text variant="bodySmall" tone="inverse" align="center" style={{ paddingVertical: spacing.xs }} onPress={() => router.push('/(tabs)/home')}>
+          <Text variant="bodySmall" tone="inverse" align="center" style={{ paddingVertical: spacing.xs }} onPress={() => router.push({ pathname: '/phone', params: { mode: 'login' } })}>
             Already have an account? Log in
           </Text>
           <Text variant="caption" align="center" style={{ color: palette.n300, opacity: 0.6 }}>

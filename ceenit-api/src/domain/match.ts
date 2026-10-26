@@ -17,9 +17,12 @@ export type Outcome =
   | { kind: 'overpaid'; invoiceId: string } // the only open invoice, but more than due
   | { kind: 'unmatched' }; // cannot tell which invoice it is for
 
+/** Clocks differ: the database, this server and the TRON network can disagree by a few seconds. A payment this close before a link was created still counts. */
+export const CLOCK_SKEW_MS = 120_000;
+
 export function classify(p: { receivedMicro: bigint; atMs: number; invoices: InvoiceLite[]; lateWindowMs: number }): Outcome {
   const { receivedMicro, atMs, invoices, lateWindowMs } = p;
-  const isOpen = (i: InvoiceLite) => i.status === 'pending' && i.createdAtMs <= atMs && atMs <= i.expiresAtMs;
+  const isOpen = (i: InvoiceLite) => i.status === 'pending' && i.createdAtMs - CLOCK_SKEW_MS <= atMs && atMs <= i.expiresAtMs;
 
   // 1. Exact amount while the link is open: a clean payment.
   const exact = invoices.find((i) => isOpen(i) && i.amountMicro === receivedMicro);

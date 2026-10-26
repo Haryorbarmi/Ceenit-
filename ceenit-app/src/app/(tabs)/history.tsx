@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { RefreshControl, StyleSheet, View } from 'react-native';
+import { router } from 'expo-router';
 import { Icon } from '@/components/Icon';
 import { Input } from '@/components/Input';
 import { OptionChip } from '@/components/Chips';
@@ -13,7 +14,8 @@ const filters = ['All', 'Paid', 'Pending', 'Review'] as const;
 type Filter = (typeof filters)[number];
 
 export default function History() {
-  const { txns } = useLinks();
+  const { txns, loading, refresh } = useLinks();
+  const [pulling, setPulling] = useState(false);
   const [filter, setFilter] = useState<Filter>('All');
   const [query, setQuery] = useState('');
 
@@ -25,7 +27,7 @@ export default function History() {
   });
 
   return (
-    <Screen>
+    <Screen refreshControl={<RefreshControl refreshing={pulling} onRefresh={async () => { setPulling(true); await refresh(); setPulling(false); }} />}>
       <Text variant="h1" style={{ paddingTop: spacing.xs }}>History</Text>
       <Input label="Search" value={query} onChangeText={setQuery} placeholder="Search by item or amount" autoCapitalize="none" />
       <View style={styles.chips}>
@@ -36,14 +38,14 @@ export default function History() {
         return rows.length ? (
           <View key={g}>
             <Text variant="label" tone="tertiary">{g}</Text>
-            {rows.map((t) => <TxnRow key={t.id} txn={t} />)}
+            {rows.map((t) => <TxnRow key={t.id} txn={t} onPress={() => router.push({ pathname: '/invoice/[id]', params: { id: t.id } })} />)}
           </View>
         ) : null;
       })}
-      {shown.length === 0 ? (
+      {!loading && shown.length === 0 ? (
         <View style={styles.empty}>
           <Icon name="search" size={28} tone="tertiary" />
-          <Text tone="secondary">No payments match this search.</Text>
+          <Text tone="secondary">{txns.length === 0 ? 'No payment links yet.' : 'No payments match this search.'}</Text>
         </View>
       ) : null}
     </Screen>

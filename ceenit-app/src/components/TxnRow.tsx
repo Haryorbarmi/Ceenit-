@@ -3,7 +3,7 @@ import { color, radius, spacing, tone as palette, ToneName } from '@/theme/token
 import { Icon, IconName } from './Icon';
 import { StatusChip } from './Chips';
 import { Text } from './Text';
-import type { Txn } from '@/data/mock';
+import type { Txn } from '@/state/links';
 
 const icons: Record<Txn['status'], IconName> = {
   Paid: 'arrow-down-left',

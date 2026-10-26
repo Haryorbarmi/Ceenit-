@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import { Button } from '@/components/Button';
@@ -6,14 +7,25 @@ import { Input } from '@/components/Input';
 import { Note, Progress, Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
 import { color, radius, spacing, tone } from '@/theme/tokens';
+import { api } from '@/lib/api';
 import { isTronAddress } from '@/lib/format';
 import { useOnboarding } from '@/state/onboarding';
 
 export default function Wallet() {
   const { data, update } = useOnboarding();
   const address = data.wallet.trim();
-  const valid = isTronAddress(address);
-  const error = address.length > 0 && !valid ? 'This is not a valid TRON (TRC20) address.' : undefined;
+  const shapeOk = isTronAddress(address);
+  // The API also checks the address's built-in checksum, which catches a mistyped character.
+  const [check, setCheck] = useState<'idle' | 'checking' | 'ok' | 'bad'>('idle');
+  useEffect(() => {
+    if (!shapeOk) return setCheck('idle');
+    setCheck('checking');
+    let stale = false;
+    api.walletValid(address).then((r) => !stale && setCheck(r.valid ? 'ok' : 'bad')).catch(() => !stale && setCheck('ok'));
+    return () => { stale = true; };
+  }, [address, shapeOk]);
+  const valid = shapeOk && check === 'ok';
+  const error = address.length > 0 && (!shapeOk || check === 'bad') ? 'This is not a valid TRON (TRC20) address. Check every character.' : undefined;
 
   return (
     <Screen

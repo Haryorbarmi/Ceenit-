@@ -8,6 +8,7 @@ import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold } from '@expo-goog
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { OnboardingProvider } from '@/state/onboarding';
 import { LinksProvider } from '@/state/links';
+import { SessionProvider, useSession } from '@/state/session';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -20,30 +21,34 @@ export default function RootLayout() {
     'Helvena-Semibold': require('../../assets/fonts/Helvena-Semibold.otf'),
   });
 
-  const [booting, setBooting] = useState(true);
-
   useEffect(() => {
     if (loaded || error) SplashScreen.hideAsync();
-  }, [loaded, error]);
-
-  // Hold the loading screen briefly so the brand is seen, then reveal the app.
-  useEffect(() => {
-    if (!loaded && !error) return;
-    const t = setTimeout(() => setBooting(false), 1600);
-    return () => clearTimeout(t);
   }, [loaded, error]);
 
   if (!loaded && !error) return null;
 
   return (
     <SafeAreaProvider>
-      <OnboardingProvider>
-        <LinksProvider>
-          <StatusBar style="dark" />
-          <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right' }} />
-          {booting ? <LoadingScreen /> : null}
-        </LinksProvider>
-      </OnboardingProvider>
+      <SessionProvider>
+        <OnboardingProvider>
+          <LinksProvider>
+            <StatusBar style="dark" />
+            <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right' }} />
+            <BootOverlay />
+          </LinksProvider>
+        </OnboardingProvider>
+      </SessionProvider>
     </SafeAreaProvider>
   );
+}
+
+// The loading screen stays until the saved login has been checked, and for at least 1.6 seconds so the brand is seen.
+function BootOverlay() {
+  const { status } = useSession();
+  const [minTime, setMinTime] = useState(true);
+  useEffect(() => {
+    const t = setTimeout(() => setMinTime(false), 1600);
+    return () => clearTimeout(t);
+  }, []);
+  return minTime || status === 'loading' ? <LoadingScreen /> : null;
 }

@@ -3,30 +3,32 @@ import { router } from 'expo-router';
 import { Icon, IconName } from '@/components/Icon';
 import { Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
-import { seller } from '@/data/mock';
+import { useSession } from '@/state/session';
 import { color, spacing, tone } from '@/theme/tokens';
 
 type Row = { icon: IconName; title: string; value?: string; locked?: boolean; onPress?: () => void };
 
-const rows: Row[] = [
+const rowsFor = (plan: string, wallet: string, logout: () => void): Row[] => [
   { icon: 'link', title: 'My link page' },
-  { icon: 'credit-card', title: 'Wallet', value: 'TRON · TQn9…2gXc' },
-  { icon: 'file-text', title: 'Plan and billing', value: 'Free' },
+  { icon: 'credit-card', title: 'Wallet', value: `TRON · ${wallet.slice(0, 4)}…${wallet.slice(-4)}` },
+  { icon: 'file-text', title: 'Plan and billing', value: plan[0]!.toUpperCase() + plan.slice(1), onPress: () => router.push('/free-limit') },
   { icon: 'bar-chart-2', title: 'Sales reports', value: 'Business', locked: true },
   { icon: 'bell', title: 'Notifications' },
   { icon: 'lock', title: 'Security', value: 'PIN, devices' },
   { icon: 'help-circle', title: 'Help and support' },
-  { icon: 'log-out', title: 'Log out', onPress: () => router.replace('/') },
+  { icon: 'log-out', title: 'Log out', onPress: logout },
 ];
 
 export default function Account() {
+  const { me, logout } = useSession();
+  const rows = rowsFor(me?.plan ?? 'free', me?.wallet ?? '', async () => { await logout(); router.replace('/'); });
   return (
     <Screen>
       <View style={styles.profile}>
-        <View style={styles.avatar}><Text variant="h2" tone="inverse">E</Text></View>
+        <View style={styles.avatar}><Text variant="h2" tone="inverse">{(me?.shopName ?? 'C')[0]}</Text></View>
         <View style={{ gap: spacing.xxs }}>
-          <Text variant="h3">{seller.shop}</Text>
-          <Text variant="bodySmall" tone="secondary">{seller.link}</Text>
+          <Text variant="h3">{me?.shopName}</Text>
+          <Text variant="bodySmall" tone="secondary">{me?.link.replace(/^https?:\/\//, '')}</Text>
         </View>
       </View>
       <View>

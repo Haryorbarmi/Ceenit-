@@ -1,13 +1,14 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import { Button } from '@/components/Button';
 import { DisclaimerSheet } from '@/components/DisclaimerSheet';
 import { Note, Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
-import { seller } from '@/data/mock';
+import { ApiError } from '@/lib/api';
 import { formatNaira, formatUsdt, parseAmount } from '@/lib/format';
 import { useLinks } from '@/state/links';
+import { useSession } from '@/state/session';
 import { color, radius, spacing, tone } from '@/theme/tokens';
 
 function Row({ k, v, strong }: { k: string; v: string; strong?: boolean }) {
@@ -20,18 +21,26 @@ function Row({ k, v, strong }: { k: string; v: string; strong?: boolean }) {
 }
 
 export default function Preview() {
-  const { draft, pickCents, createLink } = useLinks();
+  const { draft, createLink } = useLinks();
+  const { me } = useSession();
   const [sheet, setSheet] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
   const base = parseAmount(draft.amount);
-  // Chosen once when the screen opens, so the amount does not change while the seller reviews it.
-  const cents = useMemo(() => pickCents(base), []); // eslint-disable-line react-hooks/exhaustive-deps
-  const total = cents === null ? base : Math.round((base + cents / 100) * 100) / 100;
 
-  const create = () => {
-    if (cents === null) return;
+  const create = async () => {
     setSheet(false);
-    const link = createLink(draft, cents);
-    router.replace({ pathname: '/link-ready', params: { id: link.id } });
+    setBusy(true);
+    setError('');
+    try {
+      const link = await createLink(draft);
+      router.replace({ pathname: '/link-ready', params: { id: link.id } });
+    } catch (e) {
+      if (e instanceof ApiError && e.code === 'free_limit_reached') router.replace('/free-limit');
+      else setError(e instanceof ApiError ? e.message : 'Something went wrong. Try again.');
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -39,7 +48,7 @@ export default function Preview() {
       title="Preview"
       footer={
         <>
-          <Button label="Create and share link" disabled={cents === null} onPress={() => setSheet(true)} />
+          <Button label={busy ? 'Creating…' : 'Create and share link'} disabled={busy} onPress={() => setSheet(true)} />
           <Button variant="outline" label="Edit details" onPress={() => router.back()} />
         </>
       }
@@ -49,14 +58,14 @@ export default function Preview() {
 
       <View style={styles.card}>
         <View style={styles.seller}>
-          <View style={styles.avatar}><Text variant="label" tone="inverse">{seller.shop[0]}</Text></View>
-          <Text variant="bodyMedium">{seller.shop}</Text>
+          <View style={styles.avatar}><Text variant="label" tone="inverse">{me?.shopName[0]}</Text></View>
+          <Text variant="bodyMedium">{me?.shopName}</Text>
         </View>
         <Text variant="h3">{draft.item}</Text>
         <View style={{ gap: spacing.xxs }}>
           <Text variant="caption" tone="tertiary">Pay exactly</Text>
-          <Text variant="h1">{formatUsdt(total)} USDT</Text>
-          <Text variant="bodySmall" tone="tertiary">≈ {formatNaira(total)} · estimate</Text>
+          <Text variant="h1">{formatUsdt(base)} USDT</Text>
+          <Text variant="bodySmall" tone="tertiary">plus a few cents added when you create it · ≈ {formatNaira(base)} · estimate</Text>
         </View>
         <View>
           <Row k="Network" v="TRON (TRC20)" strong />
@@ -64,13 +73,8 @@ export default function Preview() {
         </View>
       </View>
 
-      {cents === null ? (
-        <Note icon="alert-triangle" tone="warning">
-          You already have 99 open links for this amount. Wait for one to finish, or change the amount.
-        </Note>
-      ) : (
-        <Note icon="shield" tone="accent">Buyers pay straight to your wallet. Once created, the link is live and cannot be cancelled.</Note>
-      )}
+      {error ? <Note icon="alert-triangle" tone="error">{error}</Note> : null}
+      <Note icon="shield" tone="accent">Buyers pay straight to your wallet. Once created, the link is live and cannot be cancelled.</Note>
 
       <DisclaimerSheet visible={sheet} expiryLabel={draft.expiry} onClose={() => setSheet(false)} onConfirm={create} />
     </Screen>
