@@ -1,6 +1,7 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { api, ApiError, Me, Method, setToken } from '@/lib/api';
+import { forgetAlerts, registerForAlerts } from '@/lib/push';
 
 // Who is signed in. The login token and the app PIN live in the phone's secure storage.
 // "unlocked" is only in memory, so the PIN is asked again each time the app opens.
@@ -56,6 +57,12 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     })();
   }, []);
 
+  // Once signed in with an account, make sure this phone is set up to receive payment alerts.
+  const hasAccount = status === 'in' && !!me;
+  useEffect(() => {
+    if (hasAccount) void registerForAlerts();
+  }, [hasAccount]);
+
   const requestCode = useCallback(async (method: Method, contact: string) => (await api.requestCode(method, contact)).devCode, []);
 
   const verifyCode = useCallback(async (method: Method, contact: string, code: string) => {
@@ -87,6 +94,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const checkPin = useCallback(async (p: string) => p === pin, [pin]);
 
   const logout = useCallback(async () => {
+    await forgetAlerts();
     setToken(null);
     await Promise.all([del('token'), del('pin')]);
     setPin(null);

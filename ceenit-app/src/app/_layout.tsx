@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import * as Notifications from 'expo-notifications';
+import { openFromAlert } from '@/lib/push';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
@@ -24,6 +26,12 @@ export default function RootLayout() {
   useEffect(() => {
     if (loaded || error) SplashScreen.hideAsync();
   }, [loaded, error]);
+
+  // Tapping a payment alert opens that payment (or the link request).
+  useEffect(() => {
+    const sub = Notifications.addNotificationResponseReceivedListener((r) => openFromAlert(r.notification.request.content.data));
+    return () => sub.remove();
+  }, []);
 
   if (!loaded && !error) return null;
 

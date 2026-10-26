@@ -1,0 +1,60 @@
+import type { Db } from '../db';
+import type { NotifyEvent, Notifier } from './context';
+
+// Phone alerts, sent through Expo's push service. A seller's phone registers its token after login.
+// If a send fails, nothing else is affected: the payment is still recorded, the alert is just missed.
+
+export type PushMessage = { to: string; title: string; body: string; sound: 'default'; data: Record<string, string> };
+type Ticket = { status: 'ok' | 'error'; details?: { error?: string } };
+export type PushSender = (messages: PushMessage[]) => Promise<Ticket[]>;
+
+const EXPO_URL = 'https://exp.host/--/api/v2/push/send';
+
+export const expoSender: PushSender = async (messages) => {
+  const res = await fetch(EXPO_URL, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(messages) });
+  const json = (await res.json()) as { data?: Ticket[] };
+  return json.data ?? [];
+};
+
+const flagWords = { late: 'came in after the link expired', underpaid: 'is less than the amount due', overpaid: 'is more than the amount due' } as const;
+
+/** The words on the lock screen for each kind of event. */
+export function compose(e: NotifyEvent, item?: string): { title: string; body: string } {
+  const what = item ? ` for ${item}` : '';
+  switch (e.type) {
+    case 'payment_detected':
+      return { title: 'Payment found', body: `${e.detail}${what} is on its way. Confirming on TRON now.` };
+    case 'payment_confirmed':
+      return { title: 'You have been paid', body: `${e.detail}${what} is confirmed on TRON.` };
+    case 'payment_flagged': {
+      const [kind = '', amount = ''] = (e.detail ?? '').split(': ');
+      return { title: 'A payment needs your attention', body: `${amount}${what} ${flagWords[kind as keyof typeof flagWords] ?? 'does not match the invoice'}. Open Ceenit to review.` };
+    }
+    case 'payment_unmatched':
+      return { title: 'Unmatched payment', body: `${e.detail} arrived in your wallet but does not match any of your links.` };
+    case 'link_requested':
+      return { title: 'New link request', body: `${e.detail || 'A buyer'} asked for a fresh link${what}. Open Ceenit to approve.` };
+  }
+}
+
+export class PushNotifier implements Notifier {
+  constructor(private db: Db, private send: PushSender = expoSender, private next?: Notifier) {}
+
+  async notify(e: NotifyEvent): Promise<void> {
+    await this.next?.notify(e);
+    try {
+      const tokens = (await this.db.query<{ token: string }>(`select token from push_tokens where seller_id = $1`, [e.sellerId])).map((r) => r.token);
+      if (!tokens.length) return;
+      let item: string | undefined;
+      if (e.invoiceId) item = (await this.db.query<{ item: string }>(`select item from invoices where id = $1`, [e.invoiceId]))[0]?.item;
+      const { title, body } = compose(e, item);
+      const data: Record<string, string> = { type: e.type, ...(e.invoiceId ? { invoiceId: e.invoiceId } : {}) };
+      const tickets = await this.send(tokens.map((to) => ({ to, title, body, sound: 'default' as const, data })));
+      // A phone that has uninstalled the app or turned alerts off is dropped so we stop sending to it.
+      const dead = tokens.filter((_, i) => tickets[i]?.status === 'error' && tickets[i]?.details?.error === 'DeviceNotRegistered');
+      for (const t of dead) await this.db.query(`delete from push_tokens where token = $1`, [t]);
+    } catch (err) {
+      console.error('[push] could not send:', err instanceof Error ? err.message : err);
+    }
+  }
+}

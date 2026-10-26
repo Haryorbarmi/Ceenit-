@@ -174,6 +174,21 @@ export function buildServer(ctx: Ctx, opts: { fake?: FakeTron } = {}) {
     };
   });
 
+  // The app registers this phone for alerts after login, and removes it on log out.
+  app.post('/v1/push-token', async (req) => {
+    const seller = await sellerOf(req);
+    const b = z.object({ token: z.string().regex(/^(Expo|Exponent)PushToken\[[^\]]{10,80}\]$/) }).parse(req.body);
+    await ctx.db.query(`insert into push_tokens (token, seller_id) values ($1, $2) on conflict (token) do update set seller_id = excluded.seller_id`, [b.token, seller.id]);
+    return { ok: true };
+  });
+
+  app.post('/v1/push-token/remove', async (req) => {
+    const seller = await sellerOf(req);
+    const b = z.object({ token: z.string().max(120) }).parse(req.body);
+    await ctx.db.query(`delete from push_tokens where token = $1 and seller_id = $2`, [b.token, seller.id]);
+    return { ok: true };
+  });
+
   app.post('/v1/payments/:txId/resolve', async (req) => {
     const seller = await sellerOf(req);
     const { txId } = z.object({ txId: z.string().regex(/^[0-9a-f]{64}$/) }).parse(req.params);

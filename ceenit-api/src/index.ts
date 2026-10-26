@@ -1,6 +1,8 @@
 import { loadConfig } from './config';
 import { openDb } from './db';
-import { consoleCodeSender, consoleNotifier, Ctx } from './domain/context';
+import { consoleNotifier, Ctx } from './domain/context';
+import { PushNotifier } from './domain/push';
+import { makeCodeSender } from './domain/senders';
 import { buildServer } from './http/server';
 import { FakeTron } from './tron/fake';
 import { TronGridClient } from './tron/trongrid';
@@ -16,7 +18,7 @@ const db = await openDb(cfg.dataDir, cfg.databaseUrl);
 const fake = cfg.network === 'fake' ? new FakeTron(cfg.usdtContract) : undefined;
 const tron: TronClient = fake ?? new TronGridClient(cfg.tronHost, cfg.usdtContract, cfg.tronApiKey);
 
-const ctx: Ctx = { db, cfg, tron, notifier: consoleNotifier, sendCode: consoleCodeSender };
+const ctx: Ctx = { db, cfg, tron, notifier: new PushNotifier(db, undefined, consoleNotifier), sendCode: makeCodeSender(process.env) };
 const watcher = new Watcher(ctx);
 const app = buildServer(ctx, { fake });
 

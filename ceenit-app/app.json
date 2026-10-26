@@ -25,8 +25,20 @@
       "expo-router",
       "expo-status-bar",
       "expo-font",
-      "expo-splash-screen"
+      "expo-splash-screen",
+      "expo-notifications"
     ],
-    "scheme": "ceenit"
+    "scheme": "ceenit",
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "f48149b9-c34e-49a1-9dae-5d06772c76e8"
+      }
+    },
+    "owner": "haryorbarmi"
   }
 }

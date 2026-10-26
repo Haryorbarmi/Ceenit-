@@ -99,6 +99,13 @@ create table if not exists otp_codes (
   window_start timestamptz not null default now()
 );
 
+create table if not exists push_tokens (
+  token text primary key,
+  seller_id text not null references sellers(id),
+  created_at timestamptz not null default now()
+);
+create index if not exists push_tokens_seller on push_tokens(seller_id);
+
 create table if not exists sessions (
   token_hash text primary key,
   contact text not null,
