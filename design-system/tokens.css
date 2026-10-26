@@ -1,0 +1,120 @@
+/* Ceenit design tokens, from Figma file EXG82Cx54YE039OCzxnljW (node 7:2) */
+@font-face {
+  font-family: "Helvena";
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  src: url("fonts/Helvena-Semibold.woff2") format("woff2"), url("fonts/Helvena-Semibold.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Helvena";
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  src: url("fonts/Helvena-Bold.woff2") format("woff2"), url("fonts/Helvena-Bold.woff") format("woff");
+}
+
+:root {
+  /* Palette: black, white and ten neutral shades. Purple, green, red and amber are the colour accents. */
+  --black: #000000;
+  --neutral-950: #0a0a0a;
+  --neutral-900: #171717;
+  --neutral-800: #262626;
+  --neutral-700: #404040;
+  --neutral-600: #525252;
+  --neutral-500: #737373;
+  --neutral-400: #a3a3a3;
+  --neutral-300: #d4d4d4;
+  --neutral-200: #e5e5e5;
+  --neutral-100: #f5f5f5;
+  --neutral-50: #fafafa;
+  --white: #ffffff;
+  --purple-50: #f5f3ff;
+  --purple-100: #ede9fe;
+  --purple-200: #ddd6fe;
+  --purple-400: #a78bfa;
+  --purple-500: #8b5cf6;
+  --purple-600: #7c3aed;
+  --purple-700: #6d28d9;
+  --purple-900: #2e1065;
+  --green-50: #f0fdf4;
+  --green-100: #dcfce7;
+  --green-200: #bbf7d0;
+  --green-400: #4ade80;
+  --green-500: #22c55e;
+  --green-600: #16a34a;
+  --green-700: #15803d;
+  --green-900: #052e16;
+  --red-50: #fef2f2;
+  --red-100: #fee2e2;
+  --red-200: #fecaca;
+  --red-400: #f87171;
+  --red-500: #ef4444;
+  --red-600: #dc2626;
+  --red-700: #b91c1c;
+  --red-900: #450a0a;
+  --amber-50: #fffbeb;
+  --amber-100: #fef3c7;
+  --amber-200: #fde68a;
+  --amber-400: #fbbf24;
+  --amber-500: #f59e0b;
+  --amber-600: #d97706;
+  --amber-700: #b45309;
+  --amber-900: #451a03;
+
+  /* Roles. Purple is secondary and marks active parts. Green = confirmed. Red = error or expired. Amber = needs attention. */
+  --accent-bg: var(--purple-50);
+  --accent-border: var(--purple-200);
+  --accent-solid: var(--purple-600);
+  --accent-text: var(--purple-700);
+  --success-bg: var(--green-50);
+  --success-border: var(--green-200);
+  --success-solid: var(--green-600);
+  --success-text: var(--green-700);
+  --error-bg: var(--red-50);
+  --error-border: var(--red-200);
+  --error-solid: var(--red-600);
+  --error-text: var(--red-700);
+  --warning-bg: var(--amber-50);
+  --warning-border: var(--amber-200);
+  --warning-solid: var(--amber-600);
+  --warning-text: var(--amber-700);
+
+  /* Semantic colours */
+  --color-bg-page: var(--white);
+  --color-bg-inverse: var(--black);
+  --color-text-primary: var(--neutral-950);
+  --color-text-secondary: var(--neutral-600);
+  --color-text-tertiary: var(--neutral-500);
+  --color-text-inverse: var(--white);
+  --color-border-default: var(--neutral-200);
+
+  /* Spacing */
+  --spacing-2xs: 4px;
+  --spacing-xs: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-3xl: 64px;
+
+  /* Radius */
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  /* Fonts */
+  --font-family-heading: "Helvena", system-ui, sans-serif;
+  --font-family-body: "Inter", system-ui, sans-serif;
+}
+
+/* Type styles */
+.type-display { font: 700 48px/52px var(--font-family-heading); letter-spacing: -0.96px; }
+.type-h1 { font: 700 36px/40px var(--font-family-heading); letter-spacing: -0.54px; }
+.type-h2 { font: 600 28px/34px var(--font-family-heading); letter-spacing: -0.28px; }
+.type-h3 { font: 600 22px/28px var(--font-family-heading); letter-spacing: -0.11px; }
+.type-body-lg { font: 400 18px/28px var(--font-family-body); }
+.type-body { font: 400 16px/24px var(--font-family-body); }
+.type-body-md { font: 500 16px/24px var(--font-family-body); }
+.type-body-sm { font: 400 14px/20px var(--font-family-body); }
+.type-label-button { font: 600 14px/20px var(--font-family-body); }
+.type-caption { font: 500 12px/16px var(--font-family-body); letter-spacing: 0.024px; }

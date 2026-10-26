@@ -1,0 +1,20 @@
+# Dependencies and build output
+node_modules/
+.next/
+.expo/
+dist/
+web-build/
+*.tsbuildinfo
+
+# Secrets and local data. Never commit these.
+.env
+.env.*
+!.env.example
+ceenit-api/data/
+
+# Third-party design template, too large and not ours to share
+Figma. template .fig
+*.fig
+
+# macOS
+.DS_Store
