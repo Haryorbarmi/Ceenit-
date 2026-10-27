@@ -1,5 +1,6 @@
 import type { Db } from '../db';
 import type { NotifyEvent, Notifier } from './context';
+import { newId } from './invoices';
 
 // Phone alerts, sent through Expo's push service. A seller's phone registers its token after login.
 // If a send fails, nothing else is affected: the payment is still recorded, the alert is just missed.
@@ -43,11 +44,13 @@ export class PushNotifier implements Notifier {
   async notify(e: NotifyEvent): Promise<void> {
     await this.next?.notify(e);
     try {
-      const tokens = (await this.db.query<{ token: string }>(`select token from push_tokens where seller_id = $1`, [e.sellerId])).map((r) => r.token);
-      if (!tokens.length) return;
       let item: string | undefined;
       if (e.invoiceId) item = (await this.db.query<{ item: string }>(`select item from invoices where id = $1`, [e.invoiceId]))[0]?.item;
       const { title, body } = compose(e, item);
+      // Keep a copy for the bell inbox, whether or not this seller has a phone registered for alerts.
+      await this.db.query(`insert into notifications (id, seller_id, type, title, body, invoice_id) values ($1, $2, $3, $4, $5, $6)`, [newId(12), e.sellerId, e.type, title, body, e.invoiceId ?? null]);
+      const tokens = (await this.db.query<{ token: string }>(`select token from push_tokens where seller_id = $1`, [e.sellerId])).map((r) => r.token);
+      if (!tokens.length) return;
       const data: Record<string, string> = { type: e.type, ...(e.invoiceId ? { invoiceId: e.invoiceId } : {}) };
       const tickets = await this.send(tokens.map((to) => ({ to, title, body, sound: 'default' as const, data })));
       // A phone that has uninstalled the app or turned alerts off is dropped so we stop sending to it.

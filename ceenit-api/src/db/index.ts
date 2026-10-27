@@ -129,6 +129,19 @@ create table if not exists seller_likes (
   primary key (seller_id, visitor)
 );
 
+-- The bell inbox: every alert the seller was sent, kept so it can be read later in the app.
+create table if not exists notifications (
+  id text primary key,
+  seller_id text not null references sellers(id),
+  type text not null,
+  title text not null,
+  body text not null,
+  invoice_id text,
+  created_at timestamptz not null default now(),
+  read_at timestamptz
+);
+create index if not exists notifications_seller on notifications(seller_id, created_at desc);
+
 create table if not exists sessions (
   token_hash text primary key,
   contact text not null,

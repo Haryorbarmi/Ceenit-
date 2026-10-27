@@ -94,6 +94,9 @@ export type InvoicePayment = {
 
 export type LinkRequest = { id: string; invoiceId: string; buyerName: string; item: string; previousAmount: string; requestsMade: number; at: string };
 
+export type AppNotification = { id: string; type: string; title: string; body: string; invoiceId: string | null; at: string; read: boolean };
+export type Inbox = { unread: number; items: AppNotification[] };
+
 export const api = {
   requestCode: (method: Method, contact: string) => request<{ sent: boolean; devCode?: string }>('POST', '/v1/auth/request-code', { method, contact }),
   verifyCode: (method: Method, contact: string, code: string) => request<{ token: string; hasAccount: boolean }>('POST', '/v1/auth/verify-code', { method, contact, code }),
@@ -107,6 +110,8 @@ export const api = {
   checkout: (plan: 'seller' | 'business') => request<{ url: string; reference: string }>('POST', '/v1/billing/checkout', { plan }),
   verifyBilling: (reference: string) => request<{ active: boolean }>('POST', '/v1/billing/verify', { reference }),
   cancelBilling: () => request<{ ok: boolean }>('POST', '/v1/billing/cancel', {}),
+  notifications: () => request<Inbox>('GET', '/v1/notifications'),
+  markNotificationsRead: () => request<{ ok: boolean }>('POST', '/v1/notifications/read', {}),
   registerPushToken: (token: string) => request<{ ok: boolean }>('POST', '/v1/push-token', { token }),
   removePushToken: (token: string) => request<{ ok: boolean }>('POST', '/v1/push-token/remove', { token }),
   invoices: () => request<Invoice[]>('GET', '/v1/invoices'),

@@ -10,6 +10,7 @@ import { Text } from '@/components/Text';
 import { TxnRow } from '@/components/TxnRow';
 import { useRate } from '@/lib/rate';
 import { formatNaira, formatUsdt } from '@/lib/format';
+import { useInbox } from '@/state/inbox';
 import { useLinks } from '@/state/links';
 import { useSession } from '@/state/session';
 import { color, hues, radius, spacing, tone } from '@/theme/tokens';
@@ -30,6 +31,7 @@ const greeting = () => {
 
 export default function Home() {
   const rate = useRate();
+  const { inbox, refresh: refreshInbox } = useInbox();
   const { me, refreshMe } = useSession();
   const { txns, invoices, requests, totals, loading, refresh } = useLinks();
   const [pulling, setPulling] = useState(false);
@@ -42,7 +44,7 @@ export default function Home() {
   return (
     <Screen
       refreshControl={
-        <RefreshControl refreshing={pulling} onRefresh={async () => { setPulling(true); await Promise.all([refresh(), refreshMe()]); setPulling(false); }} />
+        <RefreshControl refreshing={pulling} onRefresh={async () => { setPulling(true); await Promise.all([refresh(), refreshMe(), refreshInbox()]); setPulling(false); }} />
       }
       header={
         <>
@@ -54,10 +56,12 @@ export default function Home() {
                 <Text variant="h3">{me?.shopName ?? ''}</Text>
               </View>
             </View>
-            <View style={styles.bell}>
+            <Pressable style={({ pressed }) => [styles.bell, pressed && { opacity: 0.6 }]} onPress={() => router.push('/notifications')} accessibilityRole="button" accessibilityLabel={inbox.unread ? `Notifications, ${inbox.unread} unread` : 'Notifications'}>
               <Icon name="bell" size={22} />
-              {requests.length || attention.length ? <View style={styles.badge} /> : null}
-            </View>
+              {inbox.unread > 0 ? (
+                <View style={styles.badge}><Text variant="caption" tone="inverse" style={styles.badgeText}>{inbox.unread > 9 ? '9+' : inbox.unread}</Text></View>
+              ) : null}
+            </Pressable>
           </View>
           <LinearGradient colors={['#000000', '#1a0b3d', '#4c1d95']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.summary}>
             <View pointerEvents="none" style={styles.glowA} />
@@ -148,7 +152,8 @@ export default function Home() {
 const styles = StyleSheet.create({
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: spacing.xs },
   bell: { width: 44, height: 44, borderRadius: 22, borderWidth: 1, borderColor: color.borderDefault, alignItems: 'center', justifyContent: 'center' },
-  badge: { position: 'absolute', top: 8, right: 10, width: 10, height: 10, borderRadius: 5, backgroundColor: tone.accent.solid, borderWidth: 2, borderColor: color.bgPage },
+  badge: { position: 'absolute', top: -4, right: -4, minWidth: 20, height: 20, paddingHorizontal: 5, borderRadius: 10, backgroundColor: tone.accent.solid, borderWidth: 2, borderColor: color.bgPage, alignItems: 'center', justifyContent: 'center' },
+  badgeText: { fontSize: 11, lineHeight: 14 },
   who: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, flexShrink: 1 },
   summary: { borderRadius: radius.xl, padding: spacing.lg, gap: spacing.md, overflow: 'hidden' },
   glowA: { position: 'absolute', top: -60, right: -40, width: 180, height: 180, borderRadius: 90, backgroundColor: tone.accent.solid, opacity: 0.35 },

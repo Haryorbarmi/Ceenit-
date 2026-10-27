@@ -4,6 +4,7 @@ import { webhookSignatureOk } from '../billing/paystack';
 import { FALLBACK_NGN_PER_USDT } from '../billing/rate';
 import { cancelSubscription, confirmCheckout, handleWebhook, isPlanKey, startCheckout } from '../domain/billing';
 import { isSubscribed, likeCount, MAX_PHOTO_CHARS, publicProfile, setLike, setPhoto } from '../domain/profile';
+import { listNotifications, markAllRead } from '../domain/inbox';
 import { AppError, Ctx } from '../domain/context';
 import { createInvoice, getSellerInvoice, listInvoices, paidCount, toSellerView } from '../domain/invoices';
 import { approveRequest, declineRequest, listRequests, publicInvoice, requestNewLink, resolvePayment } from '../domain/links';
@@ -247,6 +248,13 @@ export function buildServer(ctx: Ctx, opts: { fake?: FakeTron } = {}) {
   });
 
   // The app registers this phone for alerts after login, and removes it on log out.
+  // ---------- Seller: the bell inbox ----------
+  app.get('/v1/notifications', async (req) => listNotifications(ctx, (await sellerOf(req)).id));
+  app.post('/v1/notifications/read', async (req) => {
+    await markAllRead(ctx, (await sellerOf(req)).id);
+    return { ok: true };
+  });
+
   app.post('/v1/push-token', async (req) => {
     const seller = await sellerOf(req);
     const b = z.object({ token: z.string().regex(/^(Expo|Exponent)PushToken\[[^\]]{10,80}\]$/) }).parse(req.body);

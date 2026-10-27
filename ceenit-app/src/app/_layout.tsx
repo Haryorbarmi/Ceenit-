@@ -9,6 +9,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold } from '@expo-google-fonts/inter';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { OnboardingProvider } from '@/state/onboarding';
+import { InboxProvider } from '@/state/inbox';
 import { LinksProvider } from '@/state/links';
 import { SessionProvider, useSession } from '@/state/session';
 
@@ -40,9 +41,11 @@ export default function RootLayout() {
       <SessionProvider>
         <OnboardingProvider>
           <LinksProvider>
-            <StatusBar style="dark" />
-            <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right' }} />
-            <BootOverlay />
+            <InboxProvider>
+              <StatusBar style="dark" />
+              <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right' }} />
+              <BootOverlay />
+            </InboxProvider>
           </LinksProvider>
         </OnboardingProvider>
       </SessionProvider>

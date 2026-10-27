@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { openDb } from './db';
+import type { Ctx } from './domain/context';
+import { listNotifications, markAllRead } from './domain/inbox';
 import { compose, PushMessage, PushNotifier } from './domain/push';
 
 async function setup() {
@@ -46,5 +48,22 @@ describe('phone alerts', () => {
   it('words each kind of event for the lock screen', () => {
     assert.match(compose({ type: 'payment_flagged', sellerId: 's', detail: 'late: 1,150.42 USDT' }, 'MacBook').body, /1,150\.42 USDT for MacBook came in after the link expired/);
     assert.equal(compose({ type: 'link_requested', sellerId: 's', detail: 'Ada' }).title, 'New link request');
+  });
+});
+
+describe('bell inbox', () => {
+  it('keeps every alert, even for a seller with no registered phone, and marks them read', async () => {
+    const { db } = await setup();
+    const n = new PushNotifier(db, async () => []);
+    await n.notify({ type: 'payment_confirmed', sellerId: 's1', invoiceId: 'inv1', detail: '8,000.37 USDT' });
+    await n.notify({ type: 'link_requested', sellerId: 's1', detail: 'Ada' });
+    const ctx = { db } as unknown as Ctx;
+    const before = await listNotifications(ctx, 's1');
+    assert.equal(before.unread, 2);
+    assert.deepEqual(before.items.map((i) => i.title).sort(), ['New link request', 'You have been paid']);
+    assert.equal(before.items.find((i) => i.type === 'payment_confirmed')!.invoiceId, 'inv1');
+    await markAllRead(ctx, 's1');
+    const after = await listNotifications(ctx, 's1');
+    assert.deepEqual([after.unread, after.items.every((i) => i.read)], [0, true]);
   });
 });
