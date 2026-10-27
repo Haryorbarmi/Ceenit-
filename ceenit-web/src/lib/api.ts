@@ -41,8 +41,18 @@ export async function fetchInvoice(id: string): Promise<Invoice | null> {
   return toInvoice((await res.json()) as ApiInvoice);
 }
 
-export async function fetchSeller(slug: string): Promise<Pick<Seller, 'slug' | 'name' | 'category' | 'city' | 'since'> | null> {
-  const res = await fetch(`${API_URL}/v1/public/sellers/${encodeURIComponent(slug)}`, { cache: 'no-store' });
+export type SellerProfile = Pick<Seller, 'slug' | 'name' | 'category' | 'city' | 'since'> & {
+  /** Subscribed sellers get the verified tick, a photo and likes. */
+  verified: boolean;
+  photo: string | null;
+  likesEnabled: boolean;
+  likes: number;
+  liked: boolean;
+};
+
+export async function fetchSeller(slug: string, visitor?: string): Promise<SellerProfile | null> {
+  const q = visitor ? `?visitor=${encodeURIComponent(visitor)}` : '';
+  const res = await fetch(`${API_URL}/v1/public/sellers/${encodeURIComponent(slug)}${q}`, { cache: 'no-store' });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`Ceenit API returned ${res.status}`);
   return res.json();

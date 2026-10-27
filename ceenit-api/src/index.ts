@@ -1,4 +1,5 @@
 import { Paystack } from './billing/paystack';
+import { RateService } from './billing/rate';
 import { loadConfig } from './config';
 import { openDb } from './db';
 import { consoleNotifier, Ctx } from './domain/context';
@@ -19,7 +20,7 @@ const db = await openDb(cfg.dataDir, cfg.databaseUrl);
 const fake = cfg.network === 'fake' ? new FakeTron(cfg.usdtContract) : undefined;
 const tron: TronClient = fake ?? new TronGridClient(cfg.tronHost, cfg.usdtContract, cfg.tronApiKey);
 
-const ctx: Ctx = { db, cfg, tron, notifier: new PushNotifier(db, undefined, consoleNotifier), sendCode: makeCodeSender(process.env), paystack: cfg.paystackSecret ? new Paystack(cfg.paystackSecret) : undefined };
+const ctx: Ctx = { db, cfg, tron, notifier: new PushNotifier(db, undefined, consoleNotifier), sendCode: makeCodeSender(process.env), paystack: cfg.paystackSecret ? new Paystack(cfg.paystackSecret) : undefined, rates: process.env.MONIERATE_API_KEY ? new RateService(process.env.MONIERATE_API_KEY) : undefined };
 const watcher = new Watcher(ctx);
 const app = buildServer(ctx, { fake });
 

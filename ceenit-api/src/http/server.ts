@@ -1,7 +1,9 @@
 import Fastify, { FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { webhookSignatureOk } from '../billing/paystack';
+import { FALLBACK_NGN_PER_USDT } from '../billing/rate';
 import { cancelSubscription, confirmCheckout, handleWebhook, isPlanKey, startCheckout } from '../domain/billing';
+import { isSubscribed, likeCount, MAX_PHOTO_CHARS, publicProfile, setLike, setPhoto } from '../domain/profile';
 import { AppError, Ctx } from '../domain/context';
 import { createInvoice, getSellerInvoice, listInvoices, paidCount, toSellerView } from '../domain/invoices';
 import { approveRequest, declineRequest, listRequests, publicInvoice, requestNewLink, resolvePayment } from '../domain/links';
@@ -86,13 +88,19 @@ export function buildServer(ctx: Ctx, opts: { fake?: FakeTron } = {}) {
 
   app.get('/v1/public/sellers/:slug', async (req) => {
     const { slug } = z.object({ slug: z.string().max(40) }).parse(req.params);
-    const [s] = await ctx.db.query<{ slug: string; shop_name: string; category: string; city: string; created_at: Date }>(
-      `select slug, shop_name, category, city, created_at from sellers where slug = $1`,
-      [slug],
-    );
-    if (!s) throw new AppError('not_found', 404);
-    return { slug: s.slug, name: s.shop_name, category: s.category, city: s.city, since: s.created_at.toLocaleString('en-GB', { month: 'long', year: 'numeric' }) };
+    const { visitor } = z.object({ visitor: z.string().max(64).optional() }).parse(req.query);
+    return publicProfile(ctx, slug, visitor);
   });
+
+  // A buyer likes (or un-likes) a subscribed seller's page. Each browser counts once.
+  app.post('/v1/public/sellers/:slug/like', async (req) => {
+    const { slug } = z.object({ slug: z.string().max(40) }).parse(req.params);
+    const b = z.object({ visitor: z.string().max(64), liked: z.boolean() }).parse(req.body);
+    return setLike(ctx, slug, b.visitor, b.liked);
+  });
+
+  // The naira estimate for one USDT. Falls back to a fixed rate when no Monierate key is set or Monierate cannot be reached.
+  app.get('/v1/rate', async () => (await ctx.rates?.get()) ?? { ngnPerUsdt: FALLBACK_NGN_PER_USDT, updatedAt: null, source: 'default' });
 
   app.get('/v1/link-names/:name', async (req) => {
     const { name } = z.object({ name: z.string().max(40) }).parse(req.params);
@@ -154,6 +162,9 @@ export function buildServer(ctx: Ctx, opts: { fake?: FakeTron } = {}) {
       cancelled: s.sub_cancelled,
       /** A paid plan whose paid month has run out. The account can still be read but cannot create links. */
       planEnded: s.plan !== 'free' && !!s.plan_until && s.plan_until.getTime() < Date.now(),
+      subscribed: isSubscribed(s),
+      photo: s.photo,
+      likes: await likeCount(ctx, s.id),
       wallet: s.wallet,
       link: `${cfg.publicBaseUrl}/${s.slug}`,
       freeUsed: await paidCount(ctx, s.id),
@@ -162,6 +173,14 @@ export function buildServer(ctx: Ctx, opts: { fake?: FakeTron } = {}) {
   }
 
   app.get('/v1/me', async (req) => meView(await sellerOf(req)));
+
+  // Only subscribed sellers can change their photo. The photo is a small image sent as a data URL, so this route allows a bigger body.
+  app.post('/v1/me/photo', { bodyLimit: MAX_PHOTO_CHARS + 1000 }, async (req) => {
+    const seller = await sellerOf(req);
+    const b = z.object({ photo: z.string().nullable() }).parse(req.body);
+    await setPhoto(ctx, seller, b.photo);
+    return meView((await getSellerByContact(ctx, seller.contact))!);
+  });
 
   // ---------- Seller: payment links ----------
   app.post('/v1/invoices', async (req, reply) => {

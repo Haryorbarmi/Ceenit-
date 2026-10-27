@@ -1,15 +1,18 @@
 import { Pressable, RefreshControl, StyleSheet, View } from 'react-native';
 import { useState } from 'react';
 import { router } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import { Icon } from '@/components/Icon';
 import { Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
 import { TxnRow } from '@/components/TxnRow';
+import { useRate } from '@/lib/rate';
 import { formatNaira, formatUsdt } from '@/lib/format';
 import { useLinks } from '@/state/links';
 import { useSession } from '@/state/session';
-import { color, radius, spacing, tone } from '@/theme/tokens';
+import { color, hues, radius, spacing, tone } from '@/theme/tokens';
 
 function SectionHead({ title, action }: { title: string; action?: string }) {
   return (
@@ -26,7 +29,8 @@ const greeting = () => {
 };
 
 export default function Home() {
-  const { me } = useSession();
+  const rate = useRate();
+  const { me, refreshMe } = useSession();
   const { txns, invoices, requests, totals, loading, refresh } = useLinks();
   const [pulling, setPulling] = useState(false);
   const pending = txns.filter((t) => t.status === 'Pending');
@@ -38,40 +42,47 @@ export default function Home() {
   return (
     <Screen
       refreshControl={
-        <RefreshControl refreshing={pulling} onRefresh={async () => { setPulling(true); await refresh(); setPulling(false); }} />
+        <RefreshControl refreshing={pulling} onRefresh={async () => { setPulling(true); await Promise.all([refresh(), refreshMe()]); setPulling(false); }} />
+      }
+      header={
+        <>
+          <View style={styles.header}>
+            <View style={styles.who}>
+              <Avatar me={me} size={44} />
+              <View style={{ gap: spacing.xxs, flexShrink: 1 }}>
+                <Text variant="bodySmall" tone="tertiary">{greeting()}, {firstName}</Text>
+                <Text variant="h3">{me?.shopName ?? ''}</Text>
+              </View>
+            </View>
+            <View style={styles.bell}>
+              <Icon name="bell" size={22} />
+              {requests.length || attention.length ? <View style={styles.badge} /> : null}
+            </View>
+          </View>
+          <LinearGradient colors={['#000000', '#1a0b3d', '#4c1d95']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.summary}>
+            <View pointerEvents="none" style={styles.glowA} />
+            <View pointerEvents="none" style={styles.glowB} />
+            <Text variant="bodySmall" tone="muted">Total received</Text>
+            <View style={{ gap: spacing.xxs }}>
+              <Text variant="h1" tone="inverse">{formatUsdt(totals.received)} USDT</Text>
+              <Text variant="caption" tone="muted">
+                {totals.received > 0 ? `≈ ${formatNaira(totals.received, rate)} · naira is an estimate` : 'Your payments will show here'}
+              </Text>
+            </View>
+            <View style={styles.stats}>
+              <View style={{ flex: 1, gap: spacing.xxs }}>
+                <Text variant="caption" tone="muted">Paid</Text>
+                <Text variant="h3" tone="inverse">{totals.paid}</Text>
+              </View>
+              <View style={{ flex: 1, gap: spacing.xxs }}>
+                <Text variant="caption" tone="muted">Pending</Text>
+                <Text variant="h3" tone="inverse">{totals.pending}</Text>
+              </View>
+            </View>
+          </LinearGradient>
+        </>
       }
     >
-      <View style={styles.header}>
-        <View style={{ gap: spacing.xxs }}>
-          <Text variant="bodySmall" tone="tertiary">{greeting()}, {firstName}</Text>
-          <Text variant="h3">{me?.shopName ?? ''}</Text>
-        </View>
-        <View style={styles.bell}>
-          <Icon name="bell" size={22} />
-          {requests.length || attention.length ? <View style={styles.badge} /> : null}
-        </View>
-      </View>
-
-      <View style={styles.summary}>
-        <Text variant="bodySmall" tone="muted">Total received</Text>
-        <View style={{ gap: spacing.xxs }}>
-          <Text variant="h1" tone="inverse">{formatUsdt(totals.received)} USDT</Text>
-          <Text variant="caption" tone="muted">
-            {totals.received > 0 ? `≈ ${formatNaira(totals.received)} · naira is an estimate` : 'Your payments will show here'}
-          </Text>
-        </View>
-        <View style={styles.stats}>
-          <View style={{ flex: 1, gap: spacing.xxs }}>
-            <Text variant="caption" tone="muted">Paid</Text>
-            <Text variant="h3" tone="inverse">{totals.paid}</Text>
-          </View>
-          <View style={{ flex: 1, gap: spacing.xxs }}>
-            <Text variant="caption" tone="muted">Pending</Text>
-            <Text variant="h3" tone="inverse">{totals.pending}</Text>
-          </View>
-        </View>
-      </View>
-
       {freePlan && me ? (
         <View style={styles.free}>
           <View style={styles.freeRow}>
@@ -138,8 +149,11 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: spacing.xs },
   bell: { width: 44, height: 44, borderRadius: 22, borderWidth: 1, borderColor: color.borderDefault, alignItems: 'center', justifyContent: 'center' },
   badge: { position: 'absolute', top: 8, right: 10, width: 10, height: 10, borderRadius: 5, backgroundColor: tone.accent.solid, borderWidth: 2, borderColor: color.bgPage },
-  summary: { backgroundColor: color.bgInverse, borderRadius: radius.xl, padding: spacing.lg, gap: spacing.md },
-  stats: { flexDirection: 'row', gap: spacing.lg, paddingTop: spacing.md, borderTopWidth: 1, borderTopColor: color.textSecondary },
+  who: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, flexShrink: 1 },
+  summary: { borderRadius: radius.xl, padding: spacing.lg, gap: spacing.md, overflow: 'hidden' },
+  glowA: { position: 'absolute', top: -60, right: -40, width: 180, height: 180, borderRadius: 90, backgroundColor: tone.accent.solid, opacity: 0.35 },
+  glowB: { position: 'absolute', bottom: -70, left: -50, width: 150, height: 150, borderRadius: 75, backgroundColor: hues.purple[400], opacity: 0.18 },
+  stats: { flexDirection: 'row', gap: spacing.lg, paddingTop: spacing.md, borderTopWidth: 1, borderTopColor: '#ffffff33' },
   free: { borderWidth: 1, borderColor: color.borderDefault, borderRadius: radius.lg, padding: spacing.md, gap: spacing.sm },
   freeRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   meter: { flexDirection: 'row', gap: spacing.xxs },

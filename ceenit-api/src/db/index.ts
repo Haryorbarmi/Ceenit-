@@ -120,6 +120,15 @@ create table if not exists push_tokens (
 );
 create index if not exists push_tokens_seller on push_tokens(seller_id);
 
+-- Seller profile: photo (small image stored as a data URL) and buyer likes. A visitor is an anonymous id kept in the buyer's browser.
+alter table sellers add column if not exists photo text;
+create table if not exists seller_likes (
+  seller_id text not null references sellers(id),
+  visitor text not null,
+  created_at timestamptz not null default now(),
+  primary key (seller_id, visitor)
+);
+
 create table if not exists sessions (
   token_hash text primary key,
   contact text not null,

@@ -158,3 +158,8 @@ a { color: inherit; }
 @media print {
   .demo, .footer, .no-print { display: none !important; }
 }
+
+.avatar.lg { object-fit: cover; }
+.like { display: inline-flex; align-items: center; gap: var(--sp-xs); padding: var(--sp-xs) var(--sp-md); border: 1px solid var(--border-default, #e5e7eb); border-radius: var(--r-full); background: var(--bg-subtle); color: var(--text-secondary); font: 600 14px/20px var(--font-body), sans-serif; cursor: pointer; }
+.like.on { color: var(--error-solid); background: var(--error-bg); border-color: var(--error-border); }
+.like.on svg { fill: currentColor; }

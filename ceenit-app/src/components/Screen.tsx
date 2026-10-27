@@ -18,6 +18,8 @@ type Props = {
   scroll?: boolean;
   /** Pull-to-refresh, for list screens. */
   refreshControl?: React.ReactElement<any>;
+  /** Stays put at the top while everything else scrolls underneath it. */
+  header?: ReactNode;
 };
 
 export function TopBar({ title, light }: { title?: string; light?: boolean }) {
@@ -39,12 +41,13 @@ export function TopBar({ title, light }: { title?: string; light?: boolean }) {
   );
 }
 
-export function Screen({ children, title, footer, background = color.bgPage, noBack, scroll = true, refreshControl }: Props) {
+export function Screen({ children, title, footer, background = color.bgPage, noBack, scroll = true, refreshControl, header }: Props) {
   const Body = scroll ? ScrollView : View;
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: background }]} edges={['top', 'bottom']}>
       {title !== undefined && !noBack ? <TopBar title={title} /> : null}
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        {header ? <View style={styles.header}>{header}</View> : null}
         <Body
           style={{ flex: 1 }}
           {...(scroll
@@ -94,6 +97,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   content: { flexGrow: 1, paddingHorizontal: spacing.lg, paddingBottom: spacing.lg, gap: spacing.md },
+  header: { paddingHorizontal: spacing.lg, paddingBottom: spacing.md, gap: spacing.md },
   footer: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xs, paddingTop: spacing.xs, gap: spacing.xs },
   note: {
     flexDirection: 'row',

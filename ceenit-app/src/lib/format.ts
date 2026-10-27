@@ -6,12 +6,12 @@ export const parseAmount = (s: string): number => {
 export const formatUsdt = (n: number): string =>
   n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-// Placeholder rate. The real rate will come from a price service on the backend.
+// Fallback rate, used until the live Aboki Forex rate arrives (or when it cannot be reached).
 // The naira figure is always shown as an estimate.
 export const NGN_PER_USDT = 1600;
 
-export const formatNaira = (usdt: number): string => {
-  const v = usdt * NGN_PER_USDT;
+export const formatNaira = (usdt: number, rate: number = NGN_PER_USDT): string => {
+  const v = usdt * rate;
   return v >= 1_000_000 ? `₦${(v / 1_000_000).toFixed(1)}M` : `₦${Math.round(v).toLocaleString('en-US')}`;
 };
 

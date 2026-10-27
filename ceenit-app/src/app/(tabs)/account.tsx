@@ -1,15 +1,19 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, RefreshControl, StyleSheet, View } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 import { router } from 'expo-router';
+import { Avatar } from '@/components/Avatar';
 import { Icon, IconName } from '@/components/Icon';
 import { Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
+import { VerifiedBadge } from '@/components/VerifiedBadge';
 import { useSession } from '@/state/session';
 import { color, spacing, tone } from '@/theme/tokens';
 
 type Row = { icon: IconName; title: string; value?: string; locked?: boolean; onPress?: () => void };
 
 const rowsFor = (plan: string, wallet: string, logout: () => void): Row[] => [
-  { icon: 'link', title: 'My link page' },
+  { icon: 'user', title: 'Edit profile', onPress: () => router.push('/profile') },
   { icon: 'credit-card', title: 'Wallet', value: `TRON · ${wallet.slice(0, 4)}…${wallet.slice(-4)}` },
   { icon: 'file-text', title: 'Plan and billing', value: plan[0]!.toUpperCase() + plan.slice(1), onPress: () => router.push('/plan') },
   { icon: 'bar-chart-2', title: 'Sales reports', value: 'Business', locked: true },
@@ -20,15 +24,32 @@ const rowsFor = (plan: string, wallet: string, logout: () => void): Row[] => [
 ];
 
 export default function Account() {
-  const { me, logout } = useSession();
+  const { me, logout, refreshMe } = useSession();
+  const [pulling, setPulling] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const copyLink = async () => {
+    if (!me) return;
+    await Clipboard.setStringAsync(me.link);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
   const rows = rowsFor(me?.plan ?? 'free', me?.wallet ?? '', async () => { await logout(); router.replace('/'); });
   return (
-    <Screen>
+    <Screen refreshControl={<RefreshControl refreshing={pulling} onRefresh={async () => { setPulling(true); await refreshMe(); setPulling(false); }} />}>
       <View style={styles.profile}>
-        <View style={styles.avatar}><Text variant="h2" tone="inverse">{(me?.shopName ?? 'C')[0]}</Text></View>
-        <View style={{ gap: spacing.xxs }}>
-          <Text variant="h3">{me?.shopName}</Text>
-          <Text variant="bodySmall" tone="secondary">{me?.link.replace(/^https?:\/\//, '')}</Text>
+        <Avatar me={me} size={64} />
+        <View style={{ gap: spacing.xxs, flex: 1 }}>
+          <View style={styles.nameRow}>
+            <Text variant="h3" style={{ flexShrink: 1 }}>{me?.shopName}</Text>
+            {me?.subscribed ? <VerifiedBadge size={20} /> : null}
+          </View>
+          <View style={styles.nameRow}>
+            <Text variant="bodySmall" tone="secondary" style={{ flexShrink: 1 }}>{me?.link.replace(/^https?:\/\//, '')}</Text>
+            <Pressable onPress={copyLink} hitSlop={8} accessibilityLabel="Copy my page link" style={({ pressed }) => pressed && { opacity: 0.6 }}>
+              <Icon name={copied ? 'check' : 'copy'} size={18} tone={copied ? 'success' : 'accent'} />
+            </Pressable>
+          </View>
+          {me?.subscribed ? <Text variant="caption" tone="tertiary">{me.likes} {me.likes === 1 ? 'like' : 'likes'}</Text> : null}
         </View>
       </View>
       <View>
@@ -48,6 +69,6 @@ export default function Account() {
 
 const styles = StyleSheet.create({
   profile: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.md },
-  avatar: { width: 64, height: 64, borderRadius: 32, backgroundColor: tone.accent.solid, alignItems: 'center', justifyContent: 'center' },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.md, borderBottomWidth: 1, borderBottomColor: color.borderDefault },
 });

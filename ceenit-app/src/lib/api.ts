@@ -52,6 +52,11 @@ export type Me = {
   cancelled: boolean;
   /** A paid plan that has run out: the account can be read, but cannot create links. */
   planEnded: boolean;
+  /** Subscribed sellers get the verified tick, can change their photo and collect likes. */
+  subscribed: boolean;
+  /** The shop photo, as a small image data URL. */
+  photo: string | null;
+  likes: number;
   wallet: string;
   link: string;
   freeUsed: number;
@@ -95,7 +100,9 @@ export const api = {
   walletValid: (address: string) => request<{ valid: boolean }>('GET', `/v1/wallets/${encodeURIComponent(address)}/check`),
   linkNameAvailable: (name: string) => request<{ available: boolean }>('GET', `/v1/link-names/${encodeURIComponent(name)}`),
   register: (b: { method: Method; fullName: string; shopName: string; category: string; city: string; linkName: string; wallet: string }) => request<Me>('POST', '/v1/sellers', b),
+  rate: () => request<{ ngnPerUsdt: number }>('GET', '/v1/rate'),
   me: () => request<Me>('GET', '/v1/me'),
+  setPhoto: (photo: string | null) => request<Me>('POST', '/v1/me/photo', { photo }),
   logoutAll: () => request<{ ok: boolean }>('POST', '/v1/auth/logout-all'),
   checkout: (plan: 'seller' | 'business') => request<{ url: string; reference: string }>('POST', '/v1/billing/checkout', { plan }),
   verifyBilling: (reference: string) => request<{ active: boolean }>('POST', '/v1/billing/verify', { reference }),

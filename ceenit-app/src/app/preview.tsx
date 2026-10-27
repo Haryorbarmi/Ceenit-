@@ -6,6 +6,7 @@ import { DisclaimerSheet } from '@/components/DisclaimerSheet';
 import { Note, Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
 import { ApiError } from '@/lib/api';
+import { useRate } from '@/lib/rate';
 import { formatNaira, formatUsdt, parseAmount } from '@/lib/format';
 import { useLinks } from '@/state/links';
 import { useSession } from '@/state/session';
@@ -21,6 +22,7 @@ function Row({ k, v, strong }: { k: string; v: string; strong?: boolean }) {
 }
 
 export default function Preview() {
+  const rate = useRate();
   const { draft, createLink } = useLinks();
   const { me } = useSession();
   const [sheet, setSheet] = useState(false);
@@ -65,7 +67,7 @@ export default function Preview() {
         <View style={{ gap: spacing.xxs }}>
           <Text variant="caption" tone="tertiary">Pay exactly</Text>
           <Text variant="h1">{formatUsdt(base)} USDT</Text>
-          <Text variant="bodySmall" tone="tertiary">plus a few cents added when you create it · ≈ {formatNaira(base)} · estimate</Text>
+          <Text variant="bodySmall" tone="tertiary">plus a few cents added when you create it · ≈ {formatNaira(base, rate)} · estimate</Text>
         </View>
         <View>
           <Row k="Network" v="TRON (TRC20)" strong />

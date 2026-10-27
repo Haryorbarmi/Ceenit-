@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { QRCodeSVG } from 'qrcode.react';
 import { Icon, IconName } from './Icon';
-import { formatCountdown, formatDateTime, formatNaira, formatUsdt, groupAddress, shortTx } from '@/lib/format';
+import { formatCountdown, formatDateTime, formatNaira, NGN_PER_USDT, formatUsdt, groupAddress, shortTx } from '@/lib/format';
 import type { Invoice, Status } from '@/lib/types';
 
 type Props = { initial: Invoice; demo: boolean };
@@ -42,6 +42,7 @@ export function PayClient({ initial, demo }: Props) {
   const router = useRouter();
   const [inv, setInv] = useState<Invoice>(initial);
   const [now, setNow] = useState(() => Date.now());
+  const [rate, setRate] = useState(NGN_PER_USDT);
   const [view, setView] = useState<'main' | 'receipt'>('main');
   const [copied, setCopied] = useState<string | null>(null);
   const [buyerName, setBuyerName] = useState('');
@@ -49,6 +50,11 @@ export function PayClient({ initial, demo }: Props) {
   const [error, setError] = useState('');
 
   // Check for the payment every few seconds. The real backend pushes the same status from the blockchain watcher.
+  // Live naira estimate (Aboki Forex). Keeps the fixed fallback if it cannot be fetched.
+  useEffect(() => {
+    fetch('/api/rate').then((r) => (r.ok ? r.json() : null)).then((d) => d && typeof d.ngnPerUsdt === 'number' && setRate(d.ngnPerUsdt)).catch(() => undefined);
+  }, []);
+
   useEffect(() => {
     const t = setInterval(async () => {
       try {
@@ -143,7 +149,7 @@ export function PayClient({ initial, demo }: Props) {
           <div className="stack-sm grow" style={{ gap: 4 }}>
             <span className="caption tertiary">Send exactly</span>
             <span className="h1">{dueText}</span>
-            <span className="body-sm tertiary">≈ {formatNaira(inv.amount)} · estimate only</span>
+            <span className="body-sm tertiary">≈ {formatNaira(inv.amount, rate)} · estimate only</span>
           </div>
           <button className="copy-circle" aria-label="Copy amount" onClick={() => copy('amount', formatUsdt(inv.amount).replace(/,/g, ''))}>
             <Icon name={copied === 'amount' ? 'check' : 'copy'} size={20} />

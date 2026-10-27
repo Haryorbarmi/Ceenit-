@@ -6,6 +6,7 @@ import { StatusChip } from '@/components/Chips';
 import { Note, Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
 import { api, ApiError, Invoice, InvoicePayment } from '@/lib/api';
+import { useRate } from '@/lib/rate';
 import { formatNaira, formatUsdt } from '@/lib/format';
 import { statusOf, useLinks } from '@/state/links';
 import { color, radius, spacing } from '@/theme/tokens';
@@ -30,6 +31,7 @@ function Row({ k, v }: { k: string; v: string }) {
 }
 
 export default function InvoiceDetail() {
+  const rate = useRate();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { refresh } = useLinks();
   const [d, setD] = useState<Detail | null>(null);
@@ -95,7 +97,7 @@ export default function InvoiceDetail() {
         <Text variant="bodySmall" tone="secondary">{d.item}</Text>
         <Text variant="h1" align="center">{formatUsdt(amount)} USDT</Text>
         <StatusChip status={status} />
-        <Text variant="bodySmall" tone="tertiary" align="center">≈ {formatNaira(amount)} · estimate</Text>
+        <Text variant="bodySmall" tone="tertiary" align="center">≈ {formatNaira(amount, rate)} · estimate</Text>
       </View>
 
       <View style={styles.card}>
