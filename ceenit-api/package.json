@@ -8,7 +8,8 @@
     "start": "tsx --env-file-if-exists=.env src/index.ts",
     "test": "tsx --test \"src/**/*.test.ts\"",
     "typecheck": "tsc --noEmit",
-    "db:check": "tsx --env-file-if-exists=.env scripts/db-check.ts"
+    "db:check": "tsx --env-file-if-exists=.env scripts/db-check.ts",
+    "paystack:setup": "tsx --env-file-if-exists=.env scripts/paystack-setup.ts"
   },
   "author": "",
   "license": "ISC",
