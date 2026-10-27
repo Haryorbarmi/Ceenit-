@@ -4,10 +4,10 @@ export type Network = 'fake' | 'nile' | 'mainnet';
 
 // Official USDT contracts. Payments in any other token are rejected.
 // mainnet: confirmed against the live TronGrid API.
-// nile (test network): check this address against the Nile faucet and explorer before relying on it.
+// nile (test network): the coin the Nile faucet hands out, confirmed from a real faucet payment on 2026-10-27.
 const USDT: Record<Network, string> = {
   mainnet: 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t',
-  nile: 'TXLAQ63Xg1NAzckPwKHvzw7CSEmLMEqcdj',
+  nile: 'TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf',
   fake: 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t',
 };
 
