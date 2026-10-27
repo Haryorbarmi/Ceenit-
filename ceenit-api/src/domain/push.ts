@@ -33,6 +33,8 @@ export function compose(e: NotifyEvent, item?: string): { title: string; body: s
     }
     case 'payment_unmatched':
       return { title: 'Unmatched payment', body: `${e.detail} arrived in your wallet but does not match any of your links.` };
+    case 'invoice_expired':
+      return { title: 'Link expired', body: `${item ?? 'A payment link'} expired without a payment.` };
     case 'link_requested':
       return { title: 'New link request', body: `${e.detail || 'A buyer'} asked for a fresh link${what}. Open Ceenit to approve.` };
   }
@@ -44,11 +46,15 @@ export class PushNotifier implements Notifier {
   async notify(e: NotifyEvent): Promise<void> {
     await this.next?.notify(e);
     try {
+      // The seller can switch off "payment found" and switch on "link expired". Switched off means no alert at all, in the inbox or on the phone.
+      const [prefs] = await this.db.query<{ notify_detected: boolean; notify_expired: boolean }>(`select notify_detected, notify_expired from sellers where id = $1`, [e.sellerId]);
+      if (prefs && ((e.type === 'payment_detected' && !prefs.notify_detected) || (e.type === 'invoice_expired' && !prefs.notify_expired))) return;
       let item: string | undefined;
       if (e.invoiceId) item = (await this.db.query<{ item: string }>(`select item from invoices where id = $1`, [e.invoiceId]))[0]?.item;
       const { title, body } = compose(e, item);
       // Keep a copy for the bell inbox, whether or not this seller has a phone registered for alerts.
       await this.db.query(`insert into notifications (id, seller_id, type, title, body, invoice_id) values ($1, $2, $3, $4, $5, $6)`, [newId(12), e.sellerId, e.type, title, body, e.invoiceId ?? null]);
+      if (e.type === 'invoice_expired') return; // inbox only, no phone alert
       const tokens = (await this.db.query<{ token: string }>(`select token from push_tokens where seller_id = $1`, [e.sellerId])).map((r) => r.token);
       if (!tokens.length) return;
       const data: Record<string, string> = { type: e.type, ...(e.invoiceId ? { invoiceId: e.invoiceId } : {}) };

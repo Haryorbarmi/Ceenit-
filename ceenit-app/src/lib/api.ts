@@ -53,6 +53,9 @@ export type Me = {
   /** A paid plan that has run out: the account can be read, but cannot create links. */
   planEnded: boolean;
   /** Subscribed sellers get the verified tick, can change their photo and collect likes. */
+  /** Alert choices. Payment found is on by default; link expired is off by default. */
+  notifyDetected: boolean;
+  notifyExpired: boolean;
   subscribed: boolean;
   /** The shop photo, as a small image data URL. */
   photo: string | null;
@@ -110,6 +113,7 @@ export const api = {
   checkout: (plan: 'seller' | 'business') => request<{ url: string; reference: string }>('POST', '/v1/billing/checkout', { plan }),
   verifyBilling: (reference: string) => request<{ active: boolean }>('POST', '/v1/billing/verify', { reference }),
   cancelBilling: () => request<{ ok: boolean }>('POST', '/v1/billing/cancel', {}),
+  setNotifyPrefs: (p: { detected?: boolean; expired?: boolean }) => request<Me>('POST', '/v1/me/notifications', p),
   notifications: () => request<Inbox>('GET', '/v1/notifications'),
   markNotificationsRead: () => request<{ ok: boolean }>('POST', '/v1/notifications/read', {}),
   registerPushToken: (token: string) => request<{ ok: boolean }>('POST', '/v1/push-token', { token }),

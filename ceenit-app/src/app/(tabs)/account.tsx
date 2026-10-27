@@ -17,7 +17,7 @@ const rowsFor = (plan: string, wallet: string, logout: () => void): Row[] => [
   { icon: 'credit-card', title: 'Wallet', value: `TRON · ${wallet.slice(0, 4)}…${wallet.slice(-4)}` },
   { icon: 'file-text', title: 'Plan and billing', value: plan[0]!.toUpperCase() + plan.slice(1), onPress: () => router.push('/plan') },
   { icon: 'bar-chart-2', title: 'Sales reports', value: 'Business', locked: true },
-  { icon: 'bell', title: 'Notifications' },
+  { icon: 'bell', title: 'Notifications', onPress: () => router.push('/notification-settings') },
   { icon: 'lock', title: 'Security', value: 'PIN, devices' },
   { icon: 'help-circle', title: 'Help and support' },
   { icon: 'log-out', title: 'Log out', onPress: logout },

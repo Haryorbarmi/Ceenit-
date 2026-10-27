@@ -67,3 +67,25 @@ describe('bell inbox', () => {
     assert.deepEqual([after.unread, after.items.every((i) => i.read)], [0, true]);
   });
 });
+
+describe('alert switches', () => {
+  it('payment found can be switched off, and an expired link only reaches the inbox once switched on', async () => {
+    const { db, sent } = await setup();
+    await db.query(`insert into push_tokens (token, seller_id) values ('ExponentPushToken[dddddddddddd]', 's1')`);
+    const n = new PushNotifier(db, async (m) => { sent.push(...m); return m.map(() => ({ status: 'ok' as const })); });
+    const ctx = { db } as unknown as Ctx;
+
+    await n.notify({ type: 'invoice_expired', sellerId: 's1', invoiceId: 'inv1' }); // off by default
+    assert.equal((await listNotifications(ctx, 's1')).items.length, 0);
+
+    await db.query(`update sellers set notify_expired = true, notify_detected = false where id = 's1'`);
+    await n.notify({ type: 'payment_detected', sellerId: 's1', invoiceId: 'inv1', detail: '5 USDT' }); // switched off
+    await n.notify({ type: 'invoice_expired', sellerId: 's1', invoiceId: 'inv1' });
+    const items = (await listNotifications(ctx, 's1')).items;
+    assert.deepEqual(items.map((i) => i.title), ['Link expired']);
+    assert.equal(sent.length, 0); // no phone alert for either
+
+    await n.notify({ type: 'payment_confirmed', sellerId: 's1', invoiceId: 'inv1', detail: '5 USDT' }); // cannot be turned off
+    assert.equal(sent.length, 1);
+  });
+});

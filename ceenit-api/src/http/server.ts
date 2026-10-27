@@ -163,6 +163,8 @@ export function buildServer(ctx: Ctx, opts: { fake?: FakeTron } = {}) {
       cancelled: s.sub_cancelled,
       /** A paid plan whose paid month has run out. The account can still be read but cannot create links. */
       planEnded: s.plan !== 'free' && !!s.plan_until && s.plan_until.getTime() < Date.now(),
+      notifyDetected: s.notify_detected,
+      notifyExpired: s.notify_expired,
       subscribed: isSubscribed(s),
       photo: s.photo,
       likes: await likeCount(ctx, s.id),
@@ -248,6 +250,14 @@ export function buildServer(ctx: Ctx, opts: { fake?: FakeTron } = {}) {
   });
 
   // The app registers this phone for alerts after login, and removes it on log out.
+  // Alert choices. Only the two switchable alerts can be changed; payment, flagged-payment and link-request alerts always stay on.
+  app.post('/v1/me/notifications', async (req) => {
+    const seller = await sellerOf(req);
+    const b = z.object({ detected: z.boolean().optional(), expired: z.boolean().optional() }).parse(req.body);
+    await ctx.db.query(`update sellers set notify_detected = coalesce($2, notify_detected), notify_expired = coalesce($3, notify_expired) where id = $1`, [seller.id, b.detected ?? null, b.expired ?? null]);
+    return meView((await getSellerByContact(ctx, seller.contact))!);
+  });
+
   // ---------- Seller: the bell inbox ----------
   app.get('/v1/notifications', async (req) => listNotifications(ctx, (await sellerOf(req)).id));
   app.post('/v1/notifications/read', async (req) => {

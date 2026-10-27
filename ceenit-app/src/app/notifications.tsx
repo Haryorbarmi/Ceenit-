@@ -14,6 +14,7 @@ const look: Record<string, { icon: IconName; tone: ToneName }> = {
   payment_detected: { icon: 'clock', tone: 'accent' },
   payment_flagged: { icon: 'alert-triangle', tone: 'warning' },
   payment_unmatched: { icon: 'help-circle', tone: 'warning' },
+  invoice_expired: { icon: 'x-circle', tone: 'error' },
   link_requested: { icon: 'refresh-cw', tone: 'accent' },
 };
 

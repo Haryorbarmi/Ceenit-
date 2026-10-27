@@ -47,7 +47,8 @@ export class Watcher {
   }
 
   private async sweepExpired(): Promise<void> {
-    await this.ctx.db.query(`update invoices set status = 'expired' where status = 'pending' and expires_at < now()`);
+    const expired = await this.ctx.db.query<{ id: string; seller_id: string }>(`update invoices set status = 'expired' where status = 'pending' and expires_at < now() returning id, seller_id`);
+    for (const i of expired) await this.ctx.notifier.notify({ type: 'invoice_expired', sellerId: i.seller_id, invoiceId: i.id });
   }
 
   private async scanWallets(): Promise<void> {

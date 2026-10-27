@@ -130,6 +130,10 @@ create table if not exists seller_likes (
 );
 
 -- The bell inbox: every alert the seller was sent, kept so it can be read later in the app.
+-- Alert choices. Payment found is on unless switched off; "link expired unpaid" is off unless switched on.
+alter table sellers add column if not exists notify_detected boolean not null default true;
+alter table sellers add column if not exists notify_expired boolean not null default false;
+
 create table if not exists notifications (
   id text primary key,
   seller_id text not null references sellers(id),
