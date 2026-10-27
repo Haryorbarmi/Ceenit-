@@ -99,6 +99,20 @@ create table if not exists otp_codes (
   window_start timestamptz not null default now()
 );
 
+-- Subscriptions (Paystack). plan_until is when the paid month runs out. Empty means no expiry (free, or given by us).
+alter table sellers add column if not exists plan_until timestamptz;
+alter table sellers add column if not exists sub_cancelled boolean not null default false;
+alter table sellers add column if not exists paystack_customer text;
+
+-- One row per successful subscription payment, so a payment can never be counted twice.
+create table if not exists billing_events (
+  reference text primary key,
+  seller_id text not null references sellers(id),
+  plan text not null,
+  amount_kobo bigint not null,
+  created_at timestamptz not null default now()
+);
+
 create table if not exists push_tokens (
   token text primary key,
   seller_id text not null references sellers(id),

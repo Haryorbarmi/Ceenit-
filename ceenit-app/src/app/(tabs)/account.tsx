@@ -11,7 +11,7 @@ type Row = { icon: IconName; title: string; value?: string; locked?: boolean; on
 const rowsFor = (plan: string, wallet: string, logout: () => void): Row[] => [
   { icon: 'link', title: 'My link page' },
   { icon: 'credit-card', title: 'Wallet', value: `TRON · ${wallet.slice(0, 4)}…${wallet.slice(-4)}` },
-  { icon: 'file-text', title: 'Plan and billing', value: plan[0]!.toUpperCase() + plan.slice(1), onPress: () => router.push('/free-limit') },
+  { icon: 'file-text', title: 'Plan and billing', value: plan[0]!.toUpperCase() + plan.slice(1), onPress: () => router.push('/plan') },
   { icon: 'bar-chart-2', title: 'Sales reports', value: 'Business', locked: true },
   { icon: 'bell', title: 'Notifications' },
   { icon: 'lock', title: 'Security', value: 'PIN, devices' },

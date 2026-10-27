@@ -1,3 +1,4 @@
+import type { Paystack } from '../billing/paystack';
 import type { Config } from '../config';
 import type { Db } from '../db';
 import type { TronClient } from '../tron/types';
@@ -28,7 +29,7 @@ export const consoleCodeSender: CodeSender = async (contact, method, code) => {
 };
 
 /** Everything a service function needs. Passed in, so tests can swap in a fake network and an in-memory database. */
-export type Ctx = { db: Db; cfg: Config; tron: TronClient; notifier: Notifier; sendCode: CodeSender };
+export type Ctx = { db: Db; cfg: Config; tron: TronClient; notifier: Notifier; sendCode: CodeSender; paystack?: Paystack };
 
 export class AppError extends Error {
   constructor(

@@ -17,7 +17,7 @@ export default function NewLink() {
 
   const next = () => {
     // After the 5th confirmed transaction on the Free plan, creating links needs a subscription.
-    if (me && me.plan === 'free' && me.freeUsed >= me.freeTotal) router.push('/free-limit');
+    if (me && ((me.plan === 'free' && me.freeUsed >= me.freeTotal) || me.planEnded)) router.push('/free-limit');
     else router.push('/preview');
   };
 

@@ -93,8 +93,12 @@ export async function createInvoice(ctx: Ctx, input: CreateInvoiceInput): Promis
   if (baseMicro < MICRO) throw new AppError('amount_too_small', 400, 'The smallest link is 1 USDT.');
   if (baseMicro > 10_000_000n * MICRO) throw new AppError('amount_too_large', 400);
 
-  const [seller] = await ctx.db.query<{ id: string; plan: string }>(`select id, plan from sellers where id = $1`, [input.sellerId]);
+  const [seller] = await ctx.db.query<{ id: string; plan: string; plan_until: Date | null }>(`select id, plan, plan_until from sellers where id = $1`, [input.sellerId]);
   if (!seller) throw new AppError('seller_not_found', 404);
+  // A paid plan that has run out (cancelled, or the card failed) makes the account read-only: old payments stay visible, new links wait for a renewal.
+  if (seller.plan !== 'free' && seller.plan_until && seller.plan_until.getTime() < Date.now()) {
+    throw new AppError('subscription_ended', 402, 'Your subscription has ended. Renew it to create new payment links.');
+  }
   const [wallet] = await ctx.db.query<{ address: string }>(`select address from wallets where seller_id = $1 and active`, [input.sellerId]);
   if (!wallet) throw new AppError('no_wallet', 409, 'Add a wallet first.');
 

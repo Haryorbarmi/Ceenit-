@@ -36,7 +36,7 @@ export default function Preview() {
       const link = await createLink(draft);
       router.replace({ pathname: '/link-ready', params: { id: link.id } });
     } catch (e) {
-      if (e instanceof ApiError && e.code === 'free_limit_reached') router.replace('/free-limit');
+      if (e instanceof ApiError && (e.code === 'free_limit_reached' || e.code === 'subscription_ended')) router.replace('/free-limit');
       else setError(e instanceof ApiError ? e.message : 'Something went wrong. Try again.');
     } finally {
       setBusy(false);

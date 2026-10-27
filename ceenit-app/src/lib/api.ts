@@ -46,6 +46,12 @@ export type Me = {
   city: string;
   contact: string;
   plan: string;
+  /** When the paid month runs out. Empty for free sellers. */
+  planUntil: string | null;
+  /** The seller cancelled. The plan still runs until planUntil. */
+  cancelled: boolean;
+  /** A paid plan that has run out: the account can be read, but cannot create links. */
+  planEnded: boolean;
   wallet: string;
   link: string;
   freeUsed: number;
@@ -91,6 +97,9 @@ export const api = {
   register: (b: { method: Method; fullName: string; shopName: string; category: string; city: string; linkName: string; wallet: string }) => request<Me>('POST', '/v1/sellers', b),
   me: () => request<Me>('GET', '/v1/me'),
   logoutAll: () => request<{ ok: boolean }>('POST', '/v1/auth/logout-all'),
+  checkout: (plan: 'seller' | 'business') => request<{ url: string; reference: string }>('POST', '/v1/billing/checkout', { plan }),
+  verifyBilling: (reference: string) => request<{ active: boolean }>('POST', '/v1/billing/verify', { reference }),
+  cancelBilling: () => request<{ ok: boolean }>('POST', '/v1/billing/cancel', {}),
   registerPushToken: (token: string) => request<{ ok: boolean }>('POST', '/v1/push-token', { token }),
   removePushToken: (token: string) => request<{ ok: boolean }>('POST', '/v1/push-token/remove', { token }),
   invoices: () => request<Invoice[]>('GET', '/v1/invoices'),

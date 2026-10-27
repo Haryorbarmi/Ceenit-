@@ -41,6 +41,10 @@ export type Config = {
   publicBaseUrl: string;
   /** Browser origins allowed to call this API. "*" is only for development. */
   corsOrigin: string;
+  /** Paystack secret key (sk_test_… while testing). Without it, subscriptions are switched off. */
+  paystackSecret?: string;
+  /** Paystack plan codes, created once by `npm run paystack:setup`. */
+  planCodes: { seller?: string; business?: string };
 };
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
@@ -62,5 +66,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     freeTransactions: 5,
     publicBaseUrl: env.PUBLIC_BASE_URL ?? 'http://localhost:3000',
     corsOrigin: env.CORS_ORIGIN ?? (isProd ? '' : '*'),
+    paystackSecret: env.PAYSTACK_SECRET_KEY || undefined,
+    planCodes: { seller: env.PAYSTACK_PLAN_SELLER || undefined, business: env.PAYSTACK_PLAN_BUSINESS || undefined },
   };
 }

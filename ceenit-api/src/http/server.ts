@@ -1,5 +1,7 @@
 import Fastify, { FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod';
+import { webhookSignatureOk } from '../billing/paystack';
+import { cancelSubscription, confirmCheckout, handleWebhook, isPlanKey, startCheckout } from '../domain/billing';
 import { AppError, Ctx } from '../domain/context';
 import { createInvoice, getSellerInvoice, listInvoices, paidCount, toSellerView } from '../domain/invoices';
 import { approveRequest, declineRequest, listRequests, publicInvoice, requestNewLink, resolvePayment } from '../domain/links';
@@ -10,9 +12,27 @@ import type { FakeTron } from '../tron/fake';
 
 const method = z.enum(['phone', 'email']);
 
+declare module 'fastify' {
+  interface FastifyRequest {
+    /** The body exactly as it arrived. Paystack's signature is calculated over this. */
+    rawBody?: string;
+  }
+}
+
 export function buildServer(ctx: Ctx, opts: { fake?: FakeTron } = {}) {
   const app = Fastify({ logger: false, bodyLimit: 20_000 });
   const { cfg } = ctx;
+
+  // Keep the raw text of every JSON body (needed to check Paystack's signature). An empty body counts as {}.
+  app.addContentTypeParser('application/json', { parseAs: 'string' }, (req, body, done) => {
+    req.rawBody = body as string;
+    if (!body) return done(null, {});
+    try {
+      done(null, JSON.parse(body as string));
+    } catch {
+      done(Object.assign(new Error('Invalid JSON'), { statusCode: 400 }), undefined);
+    }
+  });
 
   // CORS: the buyer web page and the app call this API from other origins.
   app.addHook('onRequest', async (req, reply) => {
@@ -130,6 +150,10 @@ export function buildServer(ctx: Ctx, opts: { fake?: FakeTron } = {}) {
       city: s.city,
       contact: s.contact,
       plan: s.plan,
+      planUntil: s.plan_until?.toISOString() ?? null,
+      cancelled: s.sub_cancelled,
+      /** A paid plan whose paid month has run out. The account can still be read but cannot create links. */
+      planEnded: s.plan !== 'free' && !!s.plan_until && s.plan_until.getTime() < Date.now(),
       wallet: s.wallet,
       link: `${cfg.publicBaseUrl}/${s.slug}`,
       freeUsed: await paidCount(ctx, s.id),
@@ -172,6 +196,35 @@ export function buildServer(ctx: Ctx, opts: { fake?: FakeTron } = {}) {
       ...toSellerView(row, cfg.publicBaseUrl),
       payments: payments.map((p) => ({ txId: p.tx_id, outcome: p.outcome, amount: formatUsdt(BigInt(p.amount_micro)), confirmations: p.confirmations, confirmed: p.confirmed, success: p.success, checks: p.checks, resolved: p.resolved, at: p.block_time.toISOString() })),
     };
+  });
+
+  // ---------- Subscriptions (Paystack) ----------
+  app.post('/v1/billing/checkout', async (req) => {
+    const seller = await sellerOf(req);
+    const b = z.object({ plan: z.string() }).parse(req.body);
+    if (!isPlanKey(b.plan)) throw new AppError('invalid_plan', 400);
+    return startCheckout(ctx, seller, b.plan);
+  });
+
+  app.post('/v1/billing/verify', async (req) => {
+    const seller = await sellerOf(req);
+    const b = z.object({ reference: z.string().max(60) }).parse(req.body);
+    return confirmCheckout(ctx, seller.id, b.reference);
+  });
+
+  app.post('/v1/billing/cancel', async (req) => {
+    const seller = await sellerOf(req);
+    await cancelSubscription(ctx, seller.id);
+    return { ok: true };
+  });
+
+  // Paystack calls this for renewals and cancellations. Anything without a valid signature is refused.
+  app.post('/webhooks/paystack', async (req, reply) => {
+    if (!cfg.paystackSecret || !webhookSignatureOk(cfg.paystackSecret, req.rawBody ?? '', req.headers['x-paystack-signature'] as string | undefined)) {
+      return reply.code(401).send({ error: 'bad_signature' });
+    }
+    await handleWebhook(ctx, req.body as { event: string; data: unknown });
+    return { ok: true };
   });
 
   // The app registers this phone for alerts after login, and removes it on log out.
