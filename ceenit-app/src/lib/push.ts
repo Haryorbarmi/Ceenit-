@@ -49,6 +49,7 @@ export function openFromAlert(data: Record<string, unknown> | undefined) {
   const type = data?.type;
   const invoiceId = typeof data?.invoiceId === 'string' ? data.invoiceId : undefined;
   if (type === 'link_requested') router.push('/link-requests');
+  else if (type === 'plan_ending' || type === 'plan_ended' || type === 'billing_failed') router.push('/plan');
   else if (type === 'new_device') router.push('/security');
   else if (type === 'wallet_change_requested' || type === 'wallet_changed') router.push('/my-wallet');
   else if (invoiceId) router.push({ pathname: '/invoice/[id]', params: { id: invoiceId } });

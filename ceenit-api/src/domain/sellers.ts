@@ -135,11 +135,11 @@ export async function registerSeller(ctx: Ctx, i: RegisterInput) {
   return getSellerByContact(ctx, i.contact);
 }
 
-export type SellerRow = { id: string; slug: string; full_name: string; shop_name: string; category: string; city: string; contact: string; contact_method: Method; plan: string; plan_until: Date | null; sub_cancelled: boolean; created_at: Date; photo: string | null; notify_detected: boolean; notify_expired: boolean; wallet: string };
+export type SellerRow = { id: string; slug: string; full_name: string; shop_name: string; category: string; city: string; contact: string; contact_method: Method; plan: string; plan_until: Date | null; sub_cancelled: boolean; created_at: Date; photo: string | null; notify_detected: boolean; notify_expired: boolean; notify_billing: boolean; wallet: string };
 
 export async function getSellerByContact(ctx: Ctx, contact: string): Promise<SellerRow | null> {
   const [s] = await ctx.db.query<SellerRow>(
-    `select s.id, s.slug, s.full_name, s.shop_name, s.category, s.city, s.contact, s.contact_method, s.plan, s.plan_until, s.sub_cancelled, s.created_at, s.photo, s.notify_detected, s.notify_expired, w.address as wallet
+    `select s.id, s.slug, s.full_name, s.shop_name, s.category, s.city, s.contact, s.contact_method, s.plan, s.plan_until, s.sub_cancelled, s.created_at, s.photo, s.notify_detected, s.notify_expired, s.notify_billing, w.address as wallet
        from sellers s join wallets w on w.seller_id = s.id and w.active where s.contact = $1`,
     [contact],
   );

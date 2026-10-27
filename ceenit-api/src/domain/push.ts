@@ -33,6 +33,12 @@ export function compose(e: NotifyEvent, item?: string): { title: string; body: s
     }
     case 'payment_unmatched':
       return { title: 'Unmatched payment', body: `${e.detail} arrived in your wallet but does not match any of your links.` };
+    case 'plan_ending':
+      return { title: 'Your plan ends soon', body: `Your plan ends on ${e.detail}. Subscribe again to keep creating payment links.` };
+    case 'plan_ended':
+      return { title: 'Your plan has ended', body: 'Your payments stay visible, but you cannot create new links until you subscribe again.' };
+    case 'billing_failed':
+      return { title: 'Subscription payment failed', body: 'We could not charge you for your Ceenit plan. Check your payment method with Paystack so your plan does not end.' };
     case 'new_device':
       return { title: 'New device logged in', body: `${e.detail || 'A device'} just logged in to your Ceenit account. If this was not you, open Security and log it out.` };
     case 'wallet_change_requested':
@@ -53,8 +59,9 @@ export class PushNotifier implements Notifier {
     await this.next?.notify(e);
     try {
       // The seller can switch off "payment found" and switch on "link expired". Switched off means no alert at all, in the inbox or on the phone.
-      const [prefs] = await this.db.query<{ notify_detected: boolean; notify_expired: boolean }>(`select notify_detected, notify_expired from sellers where id = $1`, [e.sellerId]);
-      if (prefs && ((e.type === 'payment_detected' && !prefs.notify_detected) || (e.type === 'invoice_expired' && !prefs.notify_expired))) return;
+      const [prefs] = await this.db.query<{ notify_detected: boolean; notify_expired: boolean; notify_billing: boolean }>(`select notify_detected, notify_expired, notify_billing from sellers where id = $1`, [e.sellerId]);
+      const billing = e.type === 'plan_ending' || e.type === 'plan_ended' || e.type === 'billing_failed';
+      if (prefs && ((e.type === 'payment_detected' && !prefs.notify_detected) || (e.type === 'invoice_expired' && !prefs.notify_expired) || (billing && !prefs.notify_billing))) return;
       let item: string | undefined;
       if (e.invoiceId) item = (await this.db.query<{ item: string }>(`select item from invoices where id = $1`, [e.invoiceId]))[0]?.item;
       const { title, body } = compose(e, item);

@@ -1,5 +1,6 @@
 import { classify, InvoiceLite } from '../domain/match';
 import { Ctx } from '../domain/context';
+import { sweepBillingReminders } from '../domain/billing';
 import { applyDueWalletChanges } from '../domain/wallet';
 import { receivedFromLogs, runChecks } from '../domain/verify';
 import { formatUsdt } from '../money';
@@ -47,8 +48,15 @@ export class Watcher {
     }
   }
 
+  private lastBillingSweep = 0;
+
   private async sweepExpired(): Promise<void> {
     await applyDueWalletChanges(this.ctx);
+    // Plan reminders only need checking now and then.
+    if (Date.now() - this.lastBillingSweep > 10 * 60_000) {
+      this.lastBillingSweep = Date.now();
+      await sweepBillingReminders(this.ctx);
+    }
     const expired = await this.ctx.db.query<{ id: string; seller_id: string }>(`update invoices set status = 'expired' where status = 'pending' and expires_at < now() returning id, seller_id`);
     for (const i of expired) await this.ctx.notifier.notify({ type: 'invoice_expired', sellerId: i.seller_id, invoiceId: i.id });
   }

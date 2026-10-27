@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { Button } from '@/components/Button';
 import { Note, Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
-import { api, ApiError } from '@/lib/api';
+import { api, ApiError, BillingPayment } from '@/lib/api';
 import { useSession } from '@/state/session';
 import { color, radius, spacing } from '@/theme/tokens';
 
@@ -27,6 +27,8 @@ export default function Plan() {
   const { me, refreshMe } = useSession();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [history, setHistory] = useState<BillingPayment[]>([]);
+  useFocusEffect(useCallback(() => { api.billingHistory().then(setHistory).catch(() => undefined); }, []));
   if (!me) return null;
 
   const paid = me.plan !== 'free';
@@ -61,7 +63,10 @@ export default function Plan() {
       title="Plan and billing"
       footer={
         paid && !me.cancelled && !me.planEnded ? (
-          <Button variant="outline" label={busy ? 'Cancelling…' : 'Cancel subscription'} disabled={busy} onPress={cancel} />
+          <>
+            <Button label={`Switch to ${me.plan === 'seller' ? 'Business' : 'Seller'}`} onPress={() => router.push('/free-limit')} />
+            <Button variant="outline" label={busy ? 'Cancelling…' : 'Cancel subscription'} disabled={busy} onPress={cancel} />
+          </>
         ) : (
           <Button label={me.planEnded ? 'Renew plan' : paid ? 'Subscribe again' : 'See plans'} onPress={() => router.push('/free-limit')} />
         )
@@ -77,6 +82,23 @@ export default function Plan() {
         <View style={styles.table}>
           <Row k={me.cancelled || me.planEnded ? 'Runs until' : 'Renews on'} v={day(me.planUntil)} />
           <Row k="Paid with" v="Paystack" />
+        </View>
+      ) : null}
+
+      {history.length > 0 ? (
+        <View style={{ gap: spacing.xs }}>
+          <Text variant="caption" tone="tertiary" style={{ letterSpacing: 0.6, paddingHorizontal: spacing.xs }}>PAYMENT HISTORY</Text>
+          <View style={styles.table}>
+            {history.map((p) => (
+              <View key={p.reference} style={styles.row}>
+                <View style={{ gap: spacing.xxs }}>
+                  <Text variant="bodyMedium">{names[p.plan] ?? p.plan} plan</Text>
+                  <Text variant="bodySmall" tone="tertiary">{day(p.at)}</Text>
+                </View>
+                <Text variant="bodyMedium">₦{(p.amountKobo / 100).toLocaleString('en-US')}</Text>
+              </View>
+            ))}
+          </View>
         </View>
       ) : null}
 

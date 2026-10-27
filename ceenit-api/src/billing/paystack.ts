@@ -60,8 +60,11 @@ export class Paystack {
     return this.call<PaystackTransaction>('GET', `/transaction/verify/${encodeURIComponent(reference)}`);
   }
 
-  subscriptionsFor(customerCode: string) {
-    return this.call<PaystackSubscription[]>('GET', `/subscription?customer=${encodeURIComponent(customerCode)}`);
+  /** A customer's subscriptions. Paystack's list only filters by the customer's number ID, not the CUS_ code, so look the ID up first. */
+  async subscriptionsFor(customerCode: string): Promise<PaystackSubscription[]> {
+    const customer = await this.call<{ id?: number }>('GET', `/customer/${encodeURIComponent(customerCode)}`);
+    if (!customer?.id) return [];
+    return this.call<PaystackSubscription[]>('GET', `/subscription?customer=${customer.id}`);
   }
 
   disable(code: string, token: string) {

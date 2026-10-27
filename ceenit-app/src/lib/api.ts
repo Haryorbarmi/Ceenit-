@@ -58,6 +58,7 @@ export type Me = {
   pendingWalletChange: { address: string; startsAt: string } | null;
   notifyDetected: boolean;
   notifyExpired: boolean;
+  notifyBilling: boolean;
   subscribed: boolean;
   /** The shop photo, as a small image data URL. */
   photo: string | null;
@@ -102,6 +103,7 @@ export type LinkRequest = { id: string; invoiceId: string; buyerName: string; it
 export type AppNotification = { id: string; type: string; title: string; body: string; invoiceId: string | null; at: string; read: boolean };
 export type Inbox = { unread: number; items: AppNotification[] };
 
+export type BillingPayment = { reference: string; plan: string; amountKobo: number; at: string };
 export type DeviceSession = { id: string; device: string; lastActive: string; current: boolean };
 
 export const api = {
@@ -121,8 +123,9 @@ export const api = {
   logoutAll: () => request<{ ok: boolean }>('POST', '/v1/auth/logout-all'),
   checkout: (plan: 'seller' | 'business') => request<{ url: string; reference: string }>('POST', '/v1/billing/checkout', { plan }),
   verifyBilling: (reference: string) => request<{ active: boolean }>('POST', '/v1/billing/verify', { reference }),
+  billingHistory: () => request<BillingPayment[]>('GET', '/v1/billing/history'),
   cancelBilling: () => request<{ ok: boolean }>('POST', '/v1/billing/cancel', {}),
-  setNotifyPrefs: (p: { detected?: boolean; expired?: boolean }) => request<Me>('POST', '/v1/me/notifications', p),
+  setNotifyPrefs: (p: { detected?: boolean; expired?: boolean; billing?: boolean }) => request<Me>('POST', '/v1/me/notifications', p),
   notifications: () => request<Inbox>('GET', '/v1/notifications'),
   markNotificationsRead: () => request<{ ok: boolean }>('POST', '/v1/notifications/read', {}),
   registerPushToken: (token: string) => request<{ ok: boolean }>('POST', '/v1/push-token', { token }),

@@ -89,3 +89,17 @@ describe('alert switches', () => {
     assert.equal(sent.length, 1);
   });
 });
+
+describe('plan reminder switch', () => {
+  it('stops plan and billing alerts when switched off', async () => {
+    const { db } = await setup();
+    const n = new PushNotifier(db, async () => []);
+    const ctx = { db } as unknown as Ctx;
+    await n.notify({ type: 'plan_ended', sellerId: 's1' });
+    assert.equal((await listNotifications(ctx, 's1')).items.length, 1);
+    await db.query(`update sellers set notify_billing = false where id = 's1'`);
+    await n.notify({ type: 'billing_failed', sellerId: 's1' });
+    await n.notify({ type: 'plan_ending', sellerId: 's1', detail: '3 November' });
+    assert.equal((await listNotifications(ctx, 's1')).items.length, 1);
+  });
+});

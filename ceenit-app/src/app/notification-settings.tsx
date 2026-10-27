@@ -44,7 +44,7 @@ export default function NotificationSettings() {
   const [error, setError] = useState('');
   if (!me) return null;
 
-  const change = async (p: { detected?: boolean; expired?: boolean }) => {
+  const change = async (p: { detected?: boolean; expired?: boolean; billing?: boolean }) => {
     setBusy(true);
     setError('');
     try {
@@ -66,6 +66,9 @@ export default function NotificationSettings() {
       <Group title="Links">
         <Row title="New link requests" hint="When a buyer asks for a fresh link." value locked />
         <Row title="Links that expire unpaid" hint="Shows in your bell inbox only, with no phone alert." value={me.notifyExpired} disabled={busy} onChange={(v) => change({ expired: v })} />
+      </Group>
+      <Group title="Account">
+        <Row title="Plan and billing reminders" hint="When your plan is about to end, has ended, or a subscription payment fails." value={me.notifyBilling} disabled={busy} onChange={(v) => change({ billing: v })} />
       </Group>
       {error ? <Note icon="alert-triangle" tone="error">{error}</Note> : null}
       <Text variant="caption" tone="tertiary" align="center">Alerts about money stay on so you never miss a payment.</Text>

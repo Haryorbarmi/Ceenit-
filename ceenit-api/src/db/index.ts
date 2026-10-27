@@ -145,6 +145,11 @@ create table if not exists wallet_changes (
 );
 create unique index if not exists wallet_changes_one_pending on wallet_changes(seller_id) where status = 'pending';
 
+-- Plan reminders: switch for them, and which plan_until each reminder was already sent for (so each is sent once).
+alter table sellers add column if not exists notify_billing boolean not null default true;
+alter table sellers add column if not exists ending_notified_until timestamptz;
+alter table sellers add column if not exists ended_notified_until timestamptz;
+
 create table if not exists notifications (
   id text primary key,
   seller_id text not null references sellers(id),

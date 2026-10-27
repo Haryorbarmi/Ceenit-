@@ -20,7 +20,9 @@ type Phase = 'choose' | 'paying' | 'done';
 // Shown when the free plan runs out, or a subscription ends. Payment happens on Paystack's own page.
 export default function FreeLimit() {
   const { me, refreshMe } = useSession();
-  const [plan, setPlan] = useState<(typeof plans)[number]['key']>('seller');
+  // A seller who already pays for a plan can only choose the other one here.
+  const activePlan = me && me.plan !== 'free' && !me.planEnded && !me.cancelled ? me.plan : null;
+  const [plan, setPlan] = useState<(typeof plans)[number]['key']>(activePlan === 'seller' ? 'business' : 'seller');
   const [phase, setPhase] = useState<Phase>('choose');
   const [error, setError] = useState('');
   const reference = useRef<string | null>(null);
@@ -81,7 +83,7 @@ export default function FreeLimit() {
           {phase === 'paying' ? (
             <Button variant="secondary" label="I have paid, check now" onPress={check} />
           ) : (
-            <Button label={`Subscribe to ${plans.find((p) => p.key === plan)!.name}`} onPress={subscribe} />
+            <Button label={`${activePlan ? 'Switch' : 'Subscribe'} to ${plans.find((p) => p.key === plan)!.name}`} onPress={subscribe} />
           )}
           <Button variant="text" label={phase === 'paying' ? 'Close' : 'Not now'} onPress={() => router.back()} />
         </>
@@ -90,27 +92,31 @@ export default function FreeLimit() {
       <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={() => router.back()} style={styles.close}>
         <Icon name="x" size={20} />
       </Pressable>
-      <View style={styles.lock}><RNText style={styles.emoji}>🥺</RNText></View>
-      <Text variant="h2">{ended ? 'Your subscription has ended' : 'You have used your 5 free transactions'}</Text>
+      {activePlan ? null : <View style={styles.lock}><RNText style={styles.emoji}>🥺</RNText></View>}
+      <Text variant="h2">{activePlan ? 'Change your plan' : ended ? 'Your subscription has ended' : 'You have used your 5 free transactions'}</Text>
       <Text tone="secondary">
-        {ended
-          ? 'Renew to create new payment links. Everything you have already received stays visible.'
-          : 'Subscribe to keep creating links and confirming payments. Your history stays available.'}
+        {activePlan
+          ? 'The days you have already paid for are kept. Your old monthly payment is stopped, and the new plan starts charging today.'
+          : ended
+            ? 'Renew to create new payment links. Everything you have already received stays visible.'
+            : 'Subscribe to keep creating links and confirming payments. Your history stays available.'}
       </Text>
       {plans.map((p) => {
-        const selected = plan === p.key;
+        const current = activePlan === p.key;
+        const selected = plan === p.key && !current;
         return (
           <Pressable
             key={p.key}
             accessibilityRole="radio"
             accessibilityState={{ selected }}
-            onPress={() => phase === 'choose' && setPlan(p.key)}
-            style={[styles.plan, { borderColor: selected ? tone.accent.solid : color.borderDefault, borderWidth: selected ? 2 : 1 }]}
+            onPress={() => phase === 'choose' && !current && setPlan(p.key)}
+            style={[styles.plan, current && { opacity: 0.55 }, { borderColor: selected ? tone.accent.solid : color.borderDefault, borderWidth: selected ? 2 : 1 }]}
           >
             <View style={{ flex: 1, gap: spacing.xxs }}>
               <View style={{ flexDirection: 'row', gap: spacing.sm, alignItems: 'baseline' }}>
                 <Text variant="h3">{p.name}</Text>
                 <Text variant="bodyMedium">{p.price}</Text>
+                {current ? <Text variant="caption" tone="success">Current plan</Text> : null}
               </View>
               <Text variant="bodySmall" tone="secondary">{p.features}</Text>
             </View>

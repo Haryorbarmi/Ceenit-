@@ -2,7 +2,7 @@ import Fastify, { FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { webhookSignatureOk } from '../billing/paystack';
 import { FALLBACK_NGN_PER_USDT } from '../billing/rate';
-import { cancelSubscription, confirmCheckout, handleWebhook, isPlanKey, startCheckout } from '../domain/billing';
+import { billingHistory, cancelSubscription, confirmCheckout, handleWebhook, isPlanKey, startCheckout } from '../domain/billing';
 import { isSubscribed, likeCount, MAX_PHOTO_CHARS, publicProfile, setLike, setPhoto } from '../domain/profile';
 import { listNotifications, markAllRead } from '../domain/inbox';
 import { AppError, Ctx } from '../domain/context';
@@ -177,6 +177,7 @@ export function buildServer(ctx: Ctx, opts: { fake?: FakeTron } = {}) {
       pendingWalletChange: await pendingWalletChange(ctx, s.id),
       notifyDetected: s.notify_detected,
       notifyExpired: s.notify_expired,
+      notifyBilling: s.notify_billing,
       subscribed: isSubscribed(s),
       photo: s.photo,
       likes: await likeCount(ctx, s.id),
@@ -240,6 +241,8 @@ export function buildServer(ctx: Ctx, opts: { fake?: FakeTron } = {}) {
     return startCheckout(ctx, seller, b.plan);
   });
 
+  app.get('/v1/billing/history', async (req) => billingHistory(ctx, (await sellerOf(req)).id));
+
   app.post('/v1/billing/verify', async (req) => {
     const seller = await sellerOf(req);
     const b = z.object({ reference: z.string().max(60) }).parse(req.body);
@@ -282,8 +285,8 @@ export function buildServer(ctx: Ctx, opts: { fake?: FakeTron } = {}) {
   // Alert choices. Only the two switchable alerts can be changed; payment, flagged-payment and link-request alerts always stay on.
   app.post('/v1/me/notifications', async (req) => {
     const seller = await sellerOf(req);
-    const b = z.object({ detected: z.boolean().optional(), expired: z.boolean().optional() }).parse(req.body);
-    await ctx.db.query(`update sellers set notify_detected = coalesce($2, notify_detected), notify_expired = coalesce($3, notify_expired) where id = $1`, [seller.id, b.detected ?? null, b.expired ?? null]);
+    const b = z.object({ detected: z.boolean().optional(), expired: z.boolean().optional(), billing: z.boolean().optional() }).parse(req.body);
+    await ctx.db.query(`update sellers set notify_detected = coalesce($2, notify_detected), notify_expired = coalesce($3, notify_expired), notify_billing = coalesce($4, notify_billing) where id = $1`, [seller.id, b.detected ?? null, b.expired ?? null, b.billing ?? null]);
     return meView((await getSellerByContact(ctx, seller.contact))!);
   });
 

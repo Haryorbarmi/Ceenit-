@@ -4,8 +4,8 @@ import { describe, it } from 'node:test';
 import { Paystack, webhookSignatureOk } from './billing/paystack';
 import { loadConfig } from './config';
 import { openDb } from './db';
-import { cancelSubscription, confirmCheckout, handleWebhook, PLAN_PRICES, startCheckout } from './domain/billing';
-import { Ctx } from './domain/context';
+import { billingHistory, cancelSubscription, confirmCheckout, handleWebhook, PLAN_PRICES, startCheckout, sweepBillingReminders } from './domain/billing';
+import { Ctx, NotifyEvent } from './domain/context';
 import { createInvoice } from './domain/invoices';
 import { registerSeller } from './domain/sellers';
 import { FakeTron } from './tron/fake';
@@ -88,7 +88,7 @@ describe('subscriptions', () => {
   });
 
   it('cancels with Paystack and keeps the plan until the paid month ends', async () => {
-    const { ctx, seller, calls } = await setup({ '/subscription?customer': [{ subscription_code: 'SUB_1', email_token: 'tok', status: 'active' }, { subscription_code: 'SUB_0', email_token: 't0', status: 'cancelled' }], '/subscription/disable': {} });
+    const { ctx, seller, calls } = await setup({ '/customer/CUS_1': { id: 411979791 }, '/subscription?customer=411979791': [{ subscription_code: 'SUB_1', email_token: 'tok', status: 'active' }, { subscription_code: 'SUB_0', email_token: 't0', status: 'cancelled' }], '/subscription/disable': {} });
     await ctx.db.query(`update sellers set plan = 'seller', plan_until = now() + interval '10 days', paystack_customer = 'CUS_1' where id = $1`, [seller.id]);
     await cancelSubscription(ctx, seller.id);
     const disables = calls.filter((c) => c.path === '/subscription/disable');
@@ -116,5 +116,73 @@ describe('subscriptions', () => {
     assert.equal(webhookSignatureOk('sk_test_x', body, good.replace(/.$/, '0')), false);
     assert.equal(webhookSignatureOk('sk_test_x', body + ' ', good), false);
     assert.equal(webhookSignatureOk('sk_test_x', body, undefined), false);
+  });
+});
+
+describe('plan switching, history and reminders', () => {
+  const sellerRow = async (ctx: Ctx, id: string) => (await ctx.db.query<any>(`select * from sellers where id = $1`, [id]))[0]!;
+  const withPlan = async (ctx: Ctx, id: string, set: string) => { await ctx.db.query(`update sellers set ${set} where id = $1`, [id]); return sellerRow(ctx, id); };
+  const capture = (ctx: Ctx) => { const events: NotifyEvent[] = []; ctx.notifier = { notify: async (e) => void events.push(e) }; return events; };
+
+  it('will not start a second checkout for the plan the seller already pays for, but allows switching or renewing a cancelled plan', async () => {
+    const { ctx, seller } = await setup({ '/transaction/initialize': { authorization_url: 'https://checkout.paystack.com/abc', reference: 'x' } });
+    const active = await withPlan(ctx, seller.id, `plan = 'seller', plan_until = now() + interval '10 days'`);
+    await assert.rejects(startCheckout(ctx, active, 'seller'), (e: any) => e.code === 'already_subscribed' && e.status === 409);
+    assert.ok((await startCheckout(ctx, active, 'business')).url); // switching is allowed
+    const cancelled = await withPlan(ctx, seller.id, `sub_cancelled = true`);
+    assert.ok((await startCheckout(ctx, cancelled, 'seller')).url); // subscribing again after cancelling is allowed
+    const ended = await withPlan(ctx, seller.id, `sub_cancelled = false, plan_until = now() - interval '1 day'`);
+    assert.ok((await startCheckout(ctx, ended, 'seller')).url); // an ended plan can be renewed
+  });
+
+  it('stops the old monthly charge when a seller moves to the other plan', async () => {
+    const { ctx, seller } = await setup();
+    await ctx.db.query(`update sellers set plan = 'seller', plan_until = now() + interval '10 days', paystack_customer = 'CUS_1' where id = $1`, [seller.id]);
+    const fp = fakePaystack({
+      '/transaction/verify': success(seller.id, 'business', 'ceenit_ref00000010'),
+      '/customer/CUS_1': { id: 411979791 },
+      '/subscription?customer=411979791': [
+        { subscription_code: 'SUB_OLD', email_token: 'told', status: 'active', plan: { plan_code: 'PLN_s' } },
+        { subscription_code: 'SUB_NEW', email_token: 'tnew', status: 'active', plan: { plan_code: 'PLN_b' } },
+      ],
+      '/subscription/disable': {},
+    });
+    ctx.paystack = fp.paystack;
+    await confirmCheckout(ctx, seller.id, 'ceenit_ref00000010');
+    const disables = fp.calls.filter((c) => c.path === '/subscription/disable');
+    assert.deepEqual(disables.map((d) => d.body.code), ['SUB_OLD']);
+    assert.equal((await planRow(ctx, seller.id)).plan, 'business');
+  });
+
+  it('lists subscription payments newest first', async () => {
+    const { ctx, seller } = await setup();
+    ctx.paystack = fakePaystack({ '/transaction/verify': success(seller.id, 'seller', 'ceenit_ref00000020') }).paystack;
+    await confirmCheckout(ctx, seller.id, 'ceenit_ref00000020');
+    const h = await billingHistory(ctx, seller.id);
+    assert.deepEqual(h.map((p) => [p.plan, p.amountKobo, p.reference]), [['seller', 500_000, 'ceenit_ref00000020']]);
+  });
+
+  it('warns once when a cancelled plan is about to end, and once when a plan has ended', async () => {
+    const { ctx, seller } = await setup();
+    const events = capture(ctx);
+    await ctx.db.query(`update sellers set plan = 'seller', sub_cancelled = true, plan_until = now() + interval '2 days' where id = $1`, [seller.id]);
+    await sweepBillingReminders(ctx);
+    await sweepBillingReminders(ctx);
+    assert.deepEqual(events.map((e) => e.type), ['plan_ending']);
+
+    await ctx.db.query(`update sellers set plan_until = now() - interval '1 hour' where id = $1`, [seller.id]);
+    await sweepBillingReminders(ctx);
+    await sweepBillingReminders(ctx);
+    assert.deepEqual(events.map((e) => e.type), ['plan_ending', 'plan_ended']);
+  });
+
+  it('does not warn about a plan that will renew by itself, and tells the seller when a renewal fails', async () => {
+    const { ctx, seller } = await setup();
+    const events = capture(ctx);
+    await ctx.db.query(`update sellers set plan = 'seller', sub_cancelled = false, plan_until = now() + interval '2 days', paystack_customer = 'CUS_7' where id = $1`, [seller.id]);
+    await sweepBillingReminders(ctx);
+    assert.equal(events.length, 0);
+    await handleWebhook(ctx, { event: 'invoice.payment_failed', data: { customer: { customer_code: 'CUS_7' } } });
+    assert.deepEqual(events.map((e) => e.type), ['billing_failed']);
   });
 });
