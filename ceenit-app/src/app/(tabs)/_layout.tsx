@@ -1,40 +1,27 @@
-import { StyleSheet, View } from 'react-native';
-import { Tabs } from 'expo-router';
-import { Icon, IconName } from '@/components/Icon';
-import { color, fonts, tone } from '@/theme/tokens';
+import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { tone } from '@/theme/tokens';
 
-const tabIcon = (name: IconName) =>
-  function TabIcon({ focused }: { focused: boolean }) {
-    return <Icon name={name} size={24} tone={focused ? 'accent' : 'tertiary'} />;
-  };
-
-function NewButton() {
-  return (
-    <View style={styles.newButton}>
-      <Icon name="plus" size={24} tone="inverse" />
-    </View>
-  );
-}
-
+// The system tab bar: on iOS 26 it is Apple's floating "liquid glass" bar (the same one WhatsApp uses),
+// and on older iPhones it is the standard frosted bar. It shrinks out of the way when you scroll down.
 export default function TabsLayout() {
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: tone.accent.solid,
-        tabBarInactiveTintColor: color.textTertiary,
-        tabBarLabelStyle: { fontFamily: fonts.bodyMedium, fontSize: 12 },
-        tabBarStyle: { backgroundColor: color.bgPage, borderTopColor: color.borderDefault },
-      }}
-    >
-      <Tabs.Screen name="home" options={{ title: 'Home', tabBarIcon: tabIcon('home') }} />
-      <Tabs.Screen name="history" options={{ title: 'History', tabBarIcon: tabIcon('clock') }} />
-      <Tabs.Screen name="new" options={{ title: 'New', tabBarIcon: () => <NewButton /> }} />
-      <Tabs.Screen name="account" options={{ title: 'Account', tabBarIcon: tabIcon('user') }} />
-    </Tabs>
+    <NativeTabs tintColor={tone.accent.solid} minimizeBehavior="onScrollDown">
+      <NativeTabs.Trigger name="home">
+        <NativeTabs.Trigger.Icon sf={{ default: 'house', selected: 'house.fill' }} md="home" />
+        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="history">
+        <NativeTabs.Trigger.Icon sf={{ default: 'clock', selected: 'clock.fill' }} md="history" />
+        <NativeTabs.Trigger.Label>History</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="new">
+        <NativeTabs.Trigger.Icon sf={{ default: 'plus.circle', selected: 'plus.circle.fill' }} md="add_circle" />
+        <NativeTabs.Trigger.Label>New</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="account">
+        <NativeTabs.Trigger.Icon sf={{ default: 'person', selected: 'person.fill' }} md="person" />
+        <NativeTabs.Trigger.Label>Account</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+    </NativeTabs>
   );
 }
-
-const styles = StyleSheet.create({
-  newButton: { width: 48, height: 48, borderRadius: 24, backgroundColor: tone.accent.solid, alignItems: 'center', justifyContent: 'center' },
-});
