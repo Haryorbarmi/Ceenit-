@@ -1,5 +1,6 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { color, radius, spacing, tone } from '@/theme/tokens';
+import { color, hues, radius, spacing, tone } from '@/theme/tokens';
 import { Icon } from './Icon';
 import { Text } from './Text';
 
@@ -19,9 +20,15 @@ export function Keypad({ onDigit, onBackspace }: { onDigit: (d: string) => void;
                 accessibilityRole="button"
                 accessibilityLabel={isBack ? 'Delete' : k}
                 onPress={() => (isBack ? onBackspace() : onDigit(k))}
-                style={({ pressed }) => [styles.key, !isBack && styles.filled, pressed && { opacity: 0.6 }]}
+                style={[styles.key, !isBack && styles.filled]}
               >
-                {isBack ? <Icon name="delete" size={22} /> : <Text variant="h3">{k}</Text>}
+                {({ pressed }) => (
+                  <>
+                    {/* A soft purple glow while the key is held down, so the tap is clearly seen. */}
+                    {pressed ? <LinearGradient pointerEvents="none" colors={[hues.purple[100], hues.purple[400]]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.press} /> : null}
+                    {isBack ? <Icon name="delete" size={22} /> : <Text variant="h3">{k}</Text>}
+                  </>
+                )}
               </Pressable>
             );
           })}
@@ -64,7 +71,8 @@ export function CodeBoxes({ value, length = 6 }: { value: string; length?: numbe
 const styles = StyleSheet.create({
   pad: { gap: spacing.xs },
   row: { flexDirection: 'row', gap: spacing.xs },
-  key: { flex: 1, height: 56, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
+  key: { flex: 1, height: 56, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  press: { ...StyleSheet.absoluteFill },
   filled: { backgroundColor: color.bgSurface },
   dots: { flexDirection: 'row', gap: spacing.md, justifyContent: 'center' },
   dot: { width: 16, height: 16, borderRadius: 8 },
