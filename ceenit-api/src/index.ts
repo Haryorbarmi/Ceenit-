@@ -26,7 +26,7 @@ const app = buildServer(ctx, { fake });
 
 await app.listen({ port: cfg.port, host: '0.0.0.0' });
 watcher.start();
-console.log(`Ceenit API on http://0.0.0.0:${cfg.port}  network=${cfg.network}  usdt=${cfg.usdtContract}`);
+console.log(`Ceeneet API on http://0.0.0.0:${cfg.port}  network=${cfg.network}  usdt=${cfg.usdtContract}`);
 
 const shutdown = async () => {
   watcher.stop();

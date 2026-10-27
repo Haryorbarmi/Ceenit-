@@ -1,4 +1,4 @@
-// Design tokens from the Ceenit Figma file (Design system, variables and text styles).
+// Design tokens from the Ceeneet Figma file (Design system, variables and text styles).
 // Black and white lead. Purple is the secondary colour for active parts. Green means confirmed,
 // red means error or expired, amber means needs attention. Status also keeps its icon and label.
 

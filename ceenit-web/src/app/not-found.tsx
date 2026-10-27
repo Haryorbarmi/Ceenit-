@@ -10,11 +10,11 @@ export default function NotFound() {
       </div>
       <div className="note warning">
         <Icon name="info" size={20} />
-        <span>Never pay to an address you got from anyone but the seller. Real Ceenit links start with ceenit.app.</span>
+        <span>Never pay to an address you got from anyone but the seller. Real Ceeneet links start with ceeneet.app.</span>
       </div>
       <div className="grow" />
       <div className="center stack-sm">
-        <span className="wordmark">ceenit</span>
+        <span className="wordmark">Ceeneet</span>
         <span className="body-sm tertiary">USDT payments, confirmed.</span>
       </div>
     </main>

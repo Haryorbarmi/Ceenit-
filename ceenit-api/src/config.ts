@@ -37,7 +37,7 @@ export type Config = {
   devReturnCode: boolean;
   /** Free plan allowance: confirmed transactions for life. */
   freeTransactions: number;
-  /** Base address of the buyer web pages. Payment links are built from it, for example https://ceenit.app */
+  /** Base address of the buyer web pages. Payment links are built from it, for example https://ceeneet.app */
   publicBaseUrl: string;
   /** Browser origins allowed to call this API. "*" is only for development. */
   corsOrigin: string;

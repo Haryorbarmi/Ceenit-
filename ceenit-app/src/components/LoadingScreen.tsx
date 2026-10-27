@@ -8,7 +8,7 @@ import { Wordmark } from './Wordmark';
 const TRACK = 120;
 const SEGMENT = 48;
 
-/** Shown while Ceenit opens: wordmark on black, a soft purple glow and a thin loader. */
+/** Shown while Ceeneet opens: wordmark on black, a soft purple glow and a thin loader. */
 export function LoadingScreen() {
   const slide = useRef(new Animated.Value(0)).current;
 
@@ -24,7 +24,7 @@ export function LoadingScreen() {
   }, [slide]);
 
   return (
-    <View style={styles.root} accessibilityRole="progressbar" accessibilityLabel="Loading Ceenit">
+    <View style={styles.root} accessibilityRole="progressbar" accessibilityLabel="Loading Ceeneet">
       <StatusBar style="light" />
       <Svg width={360} height={360} style={styles.glow} pointerEvents="none">
         <Defs>

@@ -1,6 +1,6 @@
 import { API_URL } from '@/lib/api';
 
-// The browser talks to this web server, which passes likes on to the Ceenit API.
+// The browser talks to this web server, which passes likes on to the Ceeneet API.
 export async function GET(req: Request, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const visitor = new URL(req.url).searchParams.get('visitor') ?? '';

@@ -49,7 +49,7 @@ export function makeCodeSender(env: SenderEnv, doFetch: Fetch = fetch): CodeSend
       const res = await doFetch(`${GRAPH}/${wa.WHATSAPP_PHONE_ID}/messages`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${wa.WHATSAPP_TOKEN}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(whatsappPayload(contact, code, wa.WHATSAPP_TEMPLATE ?? 'ceenit_login_code', wa.WHATSAPP_LANG ?? 'en')),
+        body: JSON.stringify(whatsappPayload(contact, code, wa.WHATSAPP_TEMPLATE ?? 'ceeneet_login_code', wa.WHATSAPP_LANG ?? 'en')),
       });
       return failIfBad(res, 'whatsapp');
     }
@@ -60,8 +60,8 @@ export function makeCodeSender(env: SenderEnv, doFetch: Fetch = fetch): CodeSend
         body: JSON.stringify({
           from: mail.MAIL_FROM,
           to: [contact],
-          subject: 'Your Ceenit code',
-          text: `Your Ceenit login code is ${code}. It expires in 10 minutes. If you did not ask for it, ignore this message.`,
+          subject: 'Your Ceeneet code',
+          text: `Your Ceeneet login code is ${code}. It expires in 10 minutes. If you did not ask for it, ignore this message.`,
         }),
       });
       return failIfBad(res, 'email');

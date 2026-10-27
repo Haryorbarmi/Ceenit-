@@ -1,8 +1,8 @@
-# Ceenit
+# Ceeneet
 
 **USDT payments, confirmed.**
 
-Ceenit is a USDT payment-link and verification tool for sellers. A seller creates a payment link, the buyer pays USDT directly to the seller's own wallet, and Ceenit confirms on the blockchain that the payment is real. Ceenit never holds, receives or moves anyone's money.
+Ceeneet is a USDT payment-link and verification tool for sellers. A seller creates a payment link, the buyer pays USDT directly to the seller's own wallet, and Ceeneet confirms on the blockchain that the payment is real. Ceeneet never holds, receives or moves anyone's money.
 
 ---
 
@@ -19,10 +19,10 @@ Sellers who accept USDT for big-ticket items (cars, gadgets, solar and appliance
 
 ## The solution
 
-1. The seller signs up, adds their TRON (TRC20) wallet address, and gets a permanent personal link, e.g. `ceenit.app/emeka-autos`.
+1. The seller signs up, adds their TRON (TRC20) wallet address, and gets a permanent personal link, e.g. `ceeneet.app/emeka-autos`.
 2. For each sale, the seller creates a one-time payment link (item, amount, expiry) and shares it on WhatsApp.
 3. The buyer opens the link, sees exactly what to pay (amount, network, QR code, wallet address) and pays from their own wallet. No account or download needed.
-4. Ceenit watches the blockchain, runs verification checks, and marks the invoice **Paid ✅**.
+4. Ceeneet watches the blockchain, runs verification checks, and marks the invoice **Paid ✅**.
 5. The same link becomes a permanent receipt with a link to the proof on Tronscan.
 
 ## Who it is for
@@ -32,7 +32,7 @@ Sellers who accept USDT for big-ticket items (cars, gadgets, solar and appliance
 
 ## How payments are verified
 
-Ceenit never trusts screenshots. Every payment is checked directly against the TRON blockchain:
+Ceeneet never trusts screenshots. Every payment is checked directly against the TRON blockchain:
 
 1. Real USDT from the official contract (blocks fake tokens)
 2. Landed in this seller's wallet
@@ -43,7 +43,7 @@ Ceenit never trusts screenshots. Every payment is checked directly against the T
 
 ## What we are not
 
-Ceenit is a payment verification and record-keeping tool. It is not a bank, exchange, wallet, escrow service, payment processor or virtual asset service provider. It never holds private keys, never receives buyer funds, and never converts USDT to naira.
+Ceeneet is a payment verification and record-keeping tool. It is not a bank, exchange, wallet, escrow service, payment processor or virtual asset service provider. It never holds private keys, never receives buyer funds, and never converts USDT to naira.
 
 ## Platforms
 
@@ -95,7 +95,7 @@ Shows: seller name and verified badge, item, exact amount with copy button, nair
 
 ## Brand
 
-- **Name:** Ceenit (from "seen it")
+- **Name:** Ceeneet (from "seen it")
 - **Tagline:** USDT payments, confirmed.
 - **Colour:** black and white lead, with purple as the secondary colour for active parts. Green means confirmed, red means error or expired, amber means needs attention
 - **Headings:** Helvena

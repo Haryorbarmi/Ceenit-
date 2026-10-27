@@ -1,5 +1,5 @@
 // What the buyer page needs to know about one payment link.
-// The real version comes from the Ceenit backend. Until that exists, src/lib/store.ts fakes it.
+// The real version comes from the Ceeneet backend. Until that exists, src/lib/store.ts fakes it.
 
 export type Status =
   | 'waiting' // link is live, nothing received yet

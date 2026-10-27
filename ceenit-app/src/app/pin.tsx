@@ -55,7 +55,7 @@ export default function Pin() {
     <Screen title={returning ? 'Set your PIN' : 'Step 4 of 4'} footer={<Keypad onDigit={add} onBackspace={() => setPin((p) => p.slice(0, -1))} />}>
       {returning ? null : <Progress step={4} />}
       <Text variant="h2">Create your app PIN</Text>
-      <Text tone="secondary">You will use it to open Ceenit and approve sensitive actions.</Text>
+      <Text tone="secondary">You will use it to open Ceeneet and approve sensitive actions.</Text>
       <View style={{ paddingTop: spacing.xl }}>
         <PinDots filled={pin.length} />
       </View>

@@ -2,9 +2,9 @@ import { notFound } from 'next/navigation';
 import { PayClient } from '@/components/PayClient';
 import { fetchInvoice } from '@/lib/api';
 
-export const metadata = { title: 'Pay · Ceenit' };
+export const metadata = { title: 'Pay · Ceeneet' };
 
-// ceenit.app/pay/<invoice>. The buyer opens this from the seller's WhatsApp message. No account needed.
+// ceeneet.app/pay/<invoice>. The buyer opens this from the seller's WhatsApp message. No account needed.
 export default async function PayPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const invoice = await fetchInvoice(id);

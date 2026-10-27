@@ -18,7 +18,7 @@ for (const plan of ['seller', 'business'] as PlanKey[]) {
     console.log(`${PLAN_NAMES[plan]}: already set (${cfg.planCodes[plan]})`);
     continue;
   }
-  const created = await paystack.createPlan(`Ceenit ${PLAN_NAMES[plan]} (monthly)`, PLAN_PRICES[plan]);
+  const created = await paystack.createPlan(`Ceeneet ${PLAN_NAMES[plan]} (monthly)`, PLAN_PRICES[plan]);
   const line = `${key}=${created.plan_code}`;
   env = new RegExp(`^${key}=.*$`, 'm').test(env) ? env.replace(new RegExp(`^${key}=.*$`, 'm'), line) : `${env.trimEnd()}\n${line}\n`;
   console.log(`${PLAN_NAMES[plan]}: created ${created.plan_code} at ₦${PLAN_PRICES[plan] / 100}/month`);

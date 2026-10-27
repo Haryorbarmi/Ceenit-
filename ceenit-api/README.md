@@ -1,4 +1,4 @@
-# Ceenit API
+# Ceeneet API
 
 The backend: accounts, payment links, and the blockchain watcher that confirms USDT payments on TRON.
 TypeScript, Fastify, Postgres (PGlite in development).

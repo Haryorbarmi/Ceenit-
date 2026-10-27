@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { api } from './api';
 import { NGN_PER_USDT } from './format';
 
-// Naira per USDT from the Ceenit API (Aboki Forex). Shared by every screen and refreshed at most every 30 minutes.
+// Naira per USDT from the Ceeneet API (Aboki Forex). Shared by every screen and refreshed at most every 30 minutes.
 let current = NGN_PER_USDT;
 let loadedAt = 0;
 const listeners = new Set<(r: number) => void>();

@@ -16,7 +16,7 @@ type Props = {
 export function DisclaimerSheet({ visible, expiryLabel, onClose, onConfirm }: Props) {
   const points: { icon: IconName; text: string; tone: ToneName }[] = [
     { icon: 'check-circle', tone: 'success', text: 'The link goes live right away.' },
-    { icon: 'credit-card', tone: 'accent', text: 'The buyer pays straight to your wallet. Ceenit never touches the money.' },
+    { icon: 'credit-card', tone: 'accent', text: 'The buyer pays straight to your wallet. Ceeneet never touches the money.' },
     { icon: 'lock', tone: 'accent', text: `Once live, a link cannot be cancelled. It expires on its own after ${expiryLabel}.` },
     { icon: 'alert-triangle', tone: 'warning', text: 'Late or wrong-amount payments are flagged for you to review.' },
   ];

@@ -5,7 +5,7 @@ import { api, Invoice, LinkRequest } from '@/lib/api';
 import { formatUsdt } from '@/lib/format';
 import { useSession } from '@/state/session';
 
-// The seller's payment links, loaded from the Ceenit API. The blockchain watcher on the server moves
+// The seller's payment links, loaded from the Ceeneet API. The blockchain watcher on the server moves
 // each link from Pending to Paid, so the app just asks again every few seconds while it is open.
 
 export const expiryOptions = [

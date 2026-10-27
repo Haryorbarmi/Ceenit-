@@ -1,4 +1,4 @@
-# Ceenit App Architecture
+# Ceeneet App Architecture
 
 How the app is organised: who uses it, the screens, the tabs, the flows, and what each part does. Built from `ceenit-product-description.md`. Items marked **(proposed)** are my suggestions and not yet decided. See "Open decisions" at the end.
 
@@ -10,7 +10,7 @@ How the app is organised: who uses it, the screens, the tabs, the flows, and wha
 |---|---|---|---|
 | **Seller app** | Sellers (one user per account) | Android first, then iPhone | Yes |
 | **Buyer web pages** | Buyers | Mobile-first web | No |
-| **Backend** | Ceenit (invisible) | Server, database, blockchain watcher | n/a |
+| **Backend** | Ceeneet (invisible) | Server, database, blockchain watcher | n/a |
 
 ```
  SELLER APP ──creates invoice──▶ BACKEND ◀──watches── TRON blockchain
@@ -53,10 +53,10 @@ App
 │   ├── Sign up or log in (phone number or email)
 │   ├── Verify code (OTP)
 │   ├── Your details (name, shop name, category, location)
-│   ├── Choose your link name  → ceenit.app/emeka-autos
+│   ├── Choose your link name  → ceeneet.app/emeka-autos
 │   ├── Add TRC20 wallet address (paste or scan QR, validated)
 │   ├── Confirm wallet (read-back + warning that payments go here)
-│   ├── Terms and "Ceenit never holds your money" acknowledgement
+│   ├── Terms and "Ceeneet never holds your money" acknowledgement
 │   └── Set app PIN (+ optional biometrics)
 │
 ├── Home tab
@@ -152,19 +152,19 @@ Welcome
 | Shop or business name | Yes | Shown to buyers on the payment page and receipts |
 | Seller category (cars, gadgets, solar, appliances, furniture, freelancer, other) | Yes | Helps tailor the app and understand the market |
 | Country and city | Yes (default Nigeria) | Naira estimate, support, future compliance |
-| Link name | Yes | Becomes `ceenit.app/<name>` |
+| Link name | Yes | Becomes `ceeneet.app/<name>` |
 | TRC20 wallet address | Yes | Where buyers pay |
 | App PIN (6 digits) | Yes | Opens the app, approves sensitive actions |
 | Biometrics (fingerprint or face) | Optional | Faster than PIN |
 | Agree to Terms and Privacy | Yes | Legal |
-| Acknowledge "Ceenit never holds or recovers your money" | Yes | Sets expectations, protects Ceenit |
+| Acknowledge "Ceeneet never holds or recovers your money" | Yes | Sets expectations, protects Ceeneet |
 | Profile photo or shop logo | Optional | Shown on the personal link page |
 | Referral code | Optional | Growth, later |
 | ID verification (BVN, NIN or similar) | No, not at launch | Only for the verified seller badge later |
 
-**Link name rules.** Lowercase letters, numbers and hyphens, 3 to 30 characters. Reserved words are blocked (`admin`, `pay`, `support`, `ceenit`). Names that imitate known brands are blocked or reviewed, to stop impersonation.
+**Link name rules.** Lowercase letters, numbers and hyphens, 3 to 30 characters. Reserved words are blocked (`admin`, `pay`, `support`, `ceeneet`). Names that imitate known brands are blocked or reviewed, to stop impersonation.
 
-**Wallet rules.** TRON addresses only (starts with `T`, 34 characters, checksum validated). Paste or scan a QR. The confirm screen shows the address back in full with a warning: *Buyers pay straight to this address. Ceenit cannot reverse or recover payments.* A small "send a test payment" option is worth considering (proposed).
+**Wallet rules.** TRON addresses only (starts with `T`, 34 characters, checksum validated). Paste or scan a QR. The confirm screen shows the address back in full with a warning: *Buyers pay straight to this address. Ceeneet cannot reverse or recover payments.* A small "send a test payment" option is worth considering (proposed).
 
 **Returning seller login**
 
@@ -184,7 +184,7 @@ Open app
 - Forgot PIN: verify with a code, then set a new PIN.
 - Lost phone or changed number: verify through the other contact method (this is why the second method matters). If neither works, manual support recovery with proof of ownership (proposed).
 
-**One user per account.** Ceenit has no staff accounts. A seller who has someone helping them sends that person the payment link (WhatsApp or QR). When the helper opens the link, they see it change to Paid the moment the payment is confirmed, so goods are handed over only when it shows.
+**One user per account.** Ceeneet has no staff accounts. A seller who has someone helping them sends that person the payment link (WhatsApp or QR). When the helper opens the link, they see it change to Paid the moment the payment is confirmed, so goods are handed over only when it shows.
 
 The wallet address is the heart of the product, so changing it later is treated as a protected action (see section 7).
 
@@ -199,7 +199,7 @@ The wallet address is the heart of the product, so changing it later is treated 
 | Field | Notes |
 |---|---|
 | Item | Free text, e.g. "Toyota Camry 2015" |
-| Amount | In USDT. Ceenit adds unique cents (e.g. 8,000.37) so the payment can be matched to this invoice |
+| Amount | In USDT. Ceeneet adds unique cents (e.g. 8,000.37) so the payment can be matched to this invoice |
 | Buyer reference | Optional (name or phone) for the seller's own records |
 | Expiry | 15 min · **30 min (default)** · 2 hours · 24 hours |
 
@@ -207,7 +207,7 @@ Flow: create, preview, **confirmation disclaimer**, then the share sheet with Wh
 
 **Disclaimer before a link goes live.** When the seller taps "Create and share link", a bottom sheet titled "Before you create this link" appears with four points:
 1. The link goes live right away.
-2. The buyer pays straight to your wallet. Ceenit never touches the money.
+2. The buyer pays straight to your wallet. Ceeneet never touches the money.
 3. Once live, a link cannot be cancelled. It expires on its own after the chosen time (30 minutes by default).
 4. Late or wrong-amount payments are flagged for you to review.
 
@@ -225,15 +225,15 @@ Status (pending, paid, expired), amount, item, countdown if pending, buyer refer
 - After cancelling a subscription, history becomes read-only and is never deleted.
 - Export to CSV or PDF is a Business feature.
 - **Filter sheet.** The filter button opens a bottom sheet: Status (All, Paid, Pending, Expired, Needs attention) and Date (Today, Last 7 days, Last 30 days, Custom), with Reset and "Show N results".
-- **Needs attention details.** Each flagged payment shows the amounts side by side and what Ceenit did not do:
+- **Needs attention details.** Each flagged payment shows the amounts side by side and what Ceeneet did not do:
   - *Late:* Confirm payment, Match to a new link, View proof on Tronscan.
   - *Underpaid:* Accept as paid, Request the balance, View proof on Tronscan.
-  - *Overpaid:* Accept as paid, Copy sender address (so any refund can be sent from the seller's own wallet, outside Ceenit), View proof on Tronscan.
+  - *Overpaid:* Accept as paid, Copy sender address (so any refund can be sent from the seller's own wallet, outside Ceeneet), View proof on Tronscan.
 
 **New-link request screen.** Opened from the push notification. Shows the buyer, item, the expired amount and time, how many requests were made (for example 1 of 3), and a choice of expiry for the new link. The seller can Approve and send, Edit amount, or Decline. **Edit amount** shows the old amount, takes a new amount (fresh cents are added), and reminds the seller that the new link is live and cannot be cancelled.
 
 ### 3.6 Personal link page
-The permanent page at `ceenit.app/<name>`. It shows **seller details only**: shop name, logo or photo, category, city, and the verified badge (later). It has no payment function. The seller sees share and QR options for the page. Buyers get a new payment link from the seller, or through "Request a new link" on an expired payment page (see 4.3).
+The permanent page at `ceeneet.app/<name>`. It shows **seller details only**: shop name, logo or photo, category, city, and the verified badge (later). It has no payment function. The seller sees share and QR options for the page. Buyers get a new payment link from the seller, or through "Request a new link" on an expired payment page (see 4.3).
 
 **Edit profile.** The seller can change shop name, category, city and photo. The **link name cannot be changed** after sign-up, so buyers can always find the seller and old links never break. This is shown on the screen.
 
@@ -241,15 +241,15 @@ The permanent page at `ceenit.app/<name>`. It shows **seller details only**: sho
 Shows the current plan, usage on Free, upgrade and downgrade, and billing history for the subscription itself.
 
 Subscription screens:
-1. **Subscribe (checkout):** a summary of the plan and price, then a choice of Card, Bank transfer or USSD. A note says payment happens on Paystack's secure page and Ceenit never sees card details. "Continue to Paystack" opens it.
+1. **Subscribe (checkout):** a summary of the plan and price, then a choice of Card, Bank transfer or USSD. A note says payment happens on Paystack's secure page and Ceeneet never sees card details. "Continue to Paystack" opens it.
 2. **Subscription active:** confirmation with plan, amount, next payment date and the payment method, and a receipt sent by email.
 3. **Manage plan:** current plan, payment method and renewal date. **Cancel subscription** keeps the plan active until the end of the paid period. After that the account is **read-only**: history stays available, but new payments are not confirmed until the seller subscribes again. "Keep my plan" is the primary button.
 
-Details: Subscriptions are paid through **Paystack** into Ceenit's own Paystack-connected account (card, bank transfer or USSD, whichever Paystack offers). This is separate from buyer payments: buyer USDT goes to the seller's wallet, and only the seller's subscription fee goes through Paystack. If a renewal fails, the seller gets a push and email and a few days to fix it before dropping to the Free limits (proposed).
+Details: Subscriptions are paid through **Paystack** into Ceeneet's own Paystack-connected account (card, bank transfer or USSD, whichever Paystack offers). This is separate from buyer payments: buyer USDT goes to the seller's wallet, and only the seller's subscription fee goes through Paystack. If a renewal fails, the seller gets a push and email and a few days to fix it before dropping to the Free limits (proposed).
 
 ### 3.8 Wallet
 
-Shows the wallet address in grouped blocks (to make checking easy), the network (TRON, TRC20, USDT), an Active label, and a reminder that Ceenit never holds funds or keys.
+Shows the wallet address in grouped blocks (to make checking easy), the network (TRON, TRC20, USDT), an Active label, and a reminder that Ceeneet never holds funds or keys.
 
 **Changing the wallet** is a protected action:
 1. The seller enters the new TRC20 address.
@@ -260,7 +260,7 @@ Shows the wallet address in grouped blocks (to make checking easy), the network 
 
 ### 3.9 Settings screens
 
-**Receipt branding [Business].** Upload a square PNG or JPG logo (at least 256 px). A live preview shows the receipt with the logo at the top. Every receipt still shows "Powered by ceenit" at the bottom.
+**Receipt branding [Business].** Upload a square PNG or JPG logo (at least 256 px). A live preview shows the receipt with the logo at the top. Every receipt still shows "Powered by ceeneet" at the bottom.
 
 **Notification settings.** Toggles, grouped by Payments, Links and Account:
 
@@ -289,7 +289,7 @@ Shows the wallet address in grouped blocks (to make checking easy), the network 
 
 ## 4. Buyer web pages (no login)
 
-### 4.1 Payment page: `ceenit.app/pay/<invoice>`
+### 4.1 Payment page: `ceeneet.app/pay/<invoice>`
 Shows, top to bottom:
 1. Seller name and verified badge
 2. Item
@@ -349,7 +349,7 @@ The Request button appears only on expired links. The buyer never has to log in.
 
 ### 4.5 Flagged payments: late, underpaid or overpaid
 
-Ceenit marks an invoice Paid only when all six checks pass. Any payment that arrives but does not fit its invoice is **flagged for the seller** instead of being marked Paid:
+Ceeneet marks an invoice Paid only when all six checks pass. Any payment that arrives but does not fit its invoice is **flagged for the seller** instead of being marked Paid:
 
 | Case | What happened | Buyer's page says |
 |---|---|---|
@@ -359,21 +359,21 @@ Ceenit marks an invoice Paid only when all six checks pass. Any payment that arr
 
 The late payment rules below apply to all three. For underpaid and overpaid payments the seller sees the amount due next to the amount received.
 
-If a buyer pays an invoice after it has expired (for example the page was left open), Ceenit does not mark it Paid. It flags the payment for the seller:
+If a buyer pays an invoice after it has expired (for example the page was left open), Ceeneet does not mark it Paid. It flags the payment for the seller:
 
 - The payment is recorded as **Late payment, needs attention** in History and on the Home dashboard.
 - The seller gets a push with the amount received, the buyer reference and the Tronscan proof.
-- The seller decides what to do: confirm and release the goods, match it to a refreshed invoice, or sort it out with the buyer directly. Ceenit never moves the money, so any refund happens outside Ceenit.
+- The seller decides what to do: confirm and release the goods, match it to a refreshed invoice, or sort it out with the buyer directly. Ceeneet never moves the money, so any refund happens outside Ceeneet.
 - The buyer's old page shows: "This link expired. Your payment was received and the seller has been told."
 - A flagged late payment does not count toward the Free limit until the seller confirms it (proposed).
 
 ### 4.6 Receipt page
-The same link becomes a permanent receipt: seller, item, amount, date and time, status Paid, transaction ID, and a link to the proof on Tronscan. Includes "View proof on Tronscan" and "Save as PDF" buttons, and a line saying it was verified on the TRON blockchain by Ceenit and that Ceenit never holds funds.
+The same link becomes a permanent receipt: seller, item, amount, date and time, status Paid, transaction ID, and a link to the proof on Tronscan. Includes "View proof on Tronscan" and "Save as PDF" buttons, and a line saying it was verified on the TRON blockchain by Ceeneet and that Ceeneet never holds funds.
 
-**Business receipt.** On the Business plan the seller's logo sits at the top of the receipt in place of the small seller name, and the Ceenit wordmark moves to a small "Powered by ceenit" line.
+**Business receipt.** On the Business plan the seller's logo sits at the top of the receipt in place of the small seller name, and the Ceeneet wordmark moves to a small "Powered by ceeneet" line.
 
 ### 4.7 Link not found
-If a buyer opens a link that does not exist (mistyped or removed), the page says "We cannot find this link" and suggests checking with the seller. A note warns buyers to only pay addresses that came from the seller, and that real Ceenit links start with ceenit.app.
+If a buyer opens a link that does not exist (mistyped or removed), the page says "We cannot find this link" and suggests checking with the seller. A note warns buyers to only pay addresses that came from the seller, and that real Ceeneet links start with ceeneet.app.
 
 ### 4.8 Buyer page inventory
 Waiting · Payment found (confirming) · Paid · Receipt · Business receipt · Expired · Request sent · Paid after expiry · Link not found · Seller page.
@@ -415,7 +415,7 @@ A payment becomes PAID only when all six pass:
 
 ### 5.2a Unique cents rule
 
-The blockchain shows only the amount, so Ceenit uses the cents as a tag to match each payment to its invoice (check 3 above).
+The blockchain shows only the amount, so Ceeneet uses the cents as a tag to match each payment to its invoice (check 3 above).
 
 - The cents (.01 to .99) are **added** to the price: 8,000 USDT becomes 8,000.37. The buyer pays slightly more, never less.
 - Each open invoice gets a different cents value among that wallet's invoices with the same base amount. Invoices for different base amounts can reuse the same cents.
@@ -455,7 +455,7 @@ The Free limit counts confirmed payments only, so expired or abandoned links do 
 
 ## 7. Roles and security
 
-Ceenit has **one user per account**: the seller. There are no staff accounts or roles.
+Ceeneet has **one user per account**: the seller. There are no staff accounts or roles.
 
 The "someone releases goods without knowing the money is real" problem is solved without staff accounts:
 - The seller gets a push notification for every confirmed payment.
@@ -496,7 +496,7 @@ Alerts for confirmed payments, late or wrong-amount payments, new link requests 
 - The personal link page shows seller details only (3.6).
 - Sign-in is by phone number (code sent by WhatsApp) or email, then an app PIN (3.1).
 - Late, underpaid and overpaid payments are flagged for the seller, not marked Paid (4.5).
-- Subscriptions are paid through Paystack into Ceenit's account (3.7).
+- Subscriptions are paid through Paystack into Ceeneet's account (3.7).
 - Unique cents follow the rule in 5.2a.
 - The seller approves every new-link request (4.3).
 - One user per account. No staff accounts. Helpers are sent the payment link instead (section 7).
@@ -526,7 +526,7 @@ Alerts for confirmed payments, late or wrong-amount payments, new link requests 
 
 ## 11. Where each part lives in Figma
 
-File: Ceenit, page "Design UI". Screens are 390 × 844. Components are at the top of the page.
+File: Ceeneet, page "Design UI". Screens are 390 × 844. Components are at the top of the page.
 
 | Figma section | What it covers | Screens |
 |---|---|---|

@@ -126,7 +126,7 @@ export default function FreeLimit() {
       })}
       {phase === 'paying' ? <Note icon="clock" tone="accent">Finish paying on the Paystack page. This screen updates by itself when your payment arrives.</Note> : null}
       {error ? <Note icon="alert-triangle" tone="error">{error}</Note> : null}
-      <Text variant="caption" tone="tertiary" align="center">Pay securely with Paystack. Ceenit never sees your card details.</Text>
+      <Text variant="caption" tone="tertiary" align="center">Pay securely with Paystack. Ceeneet never sees your card details.</Text>
     </Screen>
   );
 }

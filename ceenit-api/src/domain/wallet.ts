@@ -21,7 +21,7 @@ export async function requestWalletChange(ctx: Ctx, seller: { id: string; contac
   if (next === seller.wallet) throw new AppError('same_wallet', 400, 'That is already your wallet.');
   if (await pendingWalletChange(ctx, seller.id)) throw new AppError('change_pending', 409, 'A wallet change is already waiting. Cancel it first.');
   const [taken] = await ctx.db.query(`select 1 from wallets where address = $1 and active and seller_id <> $2`, [next, seller.id]);
-  if (taken) throw new AppError('wallet_in_use', 409, 'That wallet belongs to another Ceenit account.');
+  if (taken) throw new AppError('wallet_in_use', 409, 'That wallet belongs to another Ceeneet account.');
 
   await consumeCode(ctx, seller.contact, code);
   const hours = ctx.cfg.walletChangeHours;

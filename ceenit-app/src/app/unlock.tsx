@@ -16,7 +16,7 @@ export default function Unlock() {
   const [wrong, setWrong] = useState(false);
 
   const openWithFace = useCallback(async () => {
-    const r = await LocalAuthentication.authenticateAsync({ promptMessage: 'Open Ceenit', fallbackLabel: 'Use PIN' });
+    const r = await LocalAuthentication.authenticateAsync({ promptMessage: 'Open Ceeneet', fallbackLabel: 'Use PIN' });
     if (r.success) {
       unlock();
       router.replace('/(tabs)/home');
@@ -56,7 +56,7 @@ export default function Unlock() {
     >
       <View style={{ paddingTop: spacing.xxl, gap: spacing.xs }}>
         <Text variant="h2">Welcome back{me ? `, ${me.shopName}` : ''}</Text>
-        <Text tone="secondary">Enter your PIN to open Ceenit.</Text>
+        <Text tone="secondary">Enter your PIN to open Ceeneet.</Text>
       </View>
       <View style={{ paddingTop: spacing.xl, gap: spacing.md }}>
         <PinDots filled={pin.length} />

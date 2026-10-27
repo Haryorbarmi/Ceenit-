@@ -6,7 +6,7 @@ import { router } from 'expo-router';
 import { api } from '@/lib/api';
 
 // Phone alerts. After login the app asks permission, gets this phone's alert address from Expo,
-// and gives it to the Ceenit API. The API sends "you have been paid" to it.
+// and gives it to the Ceeneet API. The API sends "you have been paid" to it.
 
 // While the app is open, still show the alert as a banner.
 Notifications.setNotificationHandler({

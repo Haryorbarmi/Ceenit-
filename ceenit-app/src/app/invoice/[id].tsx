@@ -16,9 +16,9 @@ type Detail = Invoice & { payments: InvoicePayment[] };
 const stamp = (iso: string) => new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', hour12: true });
 
 const flagCopy = {
-  late: 'Ceenit did not mark this Paid because the link had expired. Check the payment, then decide.',
-  underpaid: 'The amount is less than the invoice, so it is not marked Paid. Ceenit cannot refund or move funds.',
-  overpaid: 'The amount is more than the invoice, so it is not marked Paid. Any refund is arranged between you and the buyer, outside Ceenit.',
+  late: 'Ceeneet did not mark this Paid because the link had expired. Check the payment, then decide.',
+  underpaid: 'The amount is less than the invoice, so it is not marked Paid. Ceeneet cannot refund or move funds.',
+  overpaid: 'The amount is more than the invoice, so it is not marked Paid. Any refund is arranged between you and the buyer, outside Ceeneet.',
 } as const;
 
 function Row({ k, v }: { k: string; v: string }) {

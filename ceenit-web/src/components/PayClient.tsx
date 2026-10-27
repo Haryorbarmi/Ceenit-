@@ -206,7 +206,7 @@ export function PayClient({ initial, demo }: Props) {
     body = (
       <>
         <div className="row between">
-          <span className="wordmark">ceenit</span>
+          <span className="wordmark">Ceeneet</span>
           <span className="chip paid"><Icon name="check" size={14} strokeWidth={2.5} />Paid</span>
         </div>
         <h1 className="h1">Receipt</h1>
@@ -220,7 +220,7 @@ export function PayClient({ initial, demo }: Props) {
             <Kv k="Confirmations" v={`${inv.confirmationsDone} of ${inv.confirmationsTotal}`} />
             <Kv k="Transaction ID" v={shortTx(inv.txId ?? '')} />
           </div>
-          <p className="caption tertiary">Verified on the TRON blockchain by Ceenit. Ceenit never holds funds.</p>
+          <p className="caption tertiary">Verified on the TRON blockchain by Ceeneet. Ceeneet never holds funds.</p>
         </div>
       </>
     );
@@ -298,7 +298,7 @@ export function PayClient({ initial, demo }: Props) {
     const copyFor: Record<'late' | 'underpaid' | 'overpaid', { title: string; text: string }> = {
       late: { title: 'We received your payment', text: 'It arrived after this link expired. The seller has been told and will confirm it. You do not need to pay again.' },
       underpaid: { title: 'We received less than the amount due', text: 'The seller has been told and will contact you. Please do not send the rest unless they ask you to.' },
-      overpaid: { title: 'We received more than the amount due', text: 'The seller has been told. Any difference is arranged between you and the seller, outside Ceenit.' },
+      overpaid: { title: 'We received more than the amount due', text: 'The seller has been told. Any difference is arranged between you and the seller, outside Ceeneet.' },
     };
     const c = copyFor[status];
     body = (

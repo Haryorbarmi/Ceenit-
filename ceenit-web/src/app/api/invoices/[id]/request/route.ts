@@ -1,6 +1,6 @@
 import { API_URL, toInvoice, type ApiInvoice } from '@/lib/api';
 
-// The buyer taps "Request a new link". The API tells the seller, who approves it in the Ceenit app.
+// The buyer taps "Request a new link". The API tells the seller, who approves it in the Ceeneet app.
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const body = (await req.json().catch(() => ({}))) as { buyerName?: string };

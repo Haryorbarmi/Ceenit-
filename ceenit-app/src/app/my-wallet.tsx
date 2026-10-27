@@ -81,7 +81,7 @@ export default function MyWallet() {
       ) : null}
 
       {error ? <Note icon="alert-triangle" tone="error">{error}</Note> : null}
-      <Note icon="shield" tone="accent">Ceenit never holds your money or your keys. Buyers pay straight into this wallet.</Note>
+      <Note icon="shield" tone="accent">Ceeneet never holds your money or your keys. Buyers pay straight into this wallet.</Note>
     </Screen>
   );
 }

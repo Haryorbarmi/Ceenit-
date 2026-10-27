@@ -9,7 +9,7 @@ type Props = Pick<
   'value' | 'onChangeText' | 'placeholder' | 'keyboardType' | 'autoCapitalize' | 'autoCorrect' | 'autoFocus' | 'maxLength' | 'editable'
 > & {
   label: string;
-  /** Fixed text shown before the typed value, e.g. "ceenit.app/" */
+  /** Fixed text shown before the typed value, e.g. "ceeneet.app/" */
   prefix?: string;
   error?: string;
 };

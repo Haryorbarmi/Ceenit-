@@ -139,7 +139,7 @@ export default function ChangeWallet() {
         <Text variant="caption" tone="tertiary">Current wallet</Text>
         <Text variant="bodySmall">{me.wallet}</Text>
       </View>
-      <Note icon="alert-triangle" tone="warning">Only TRON (TRC20) addresses work. A wrong address means lost payments, and Ceenit cannot recover them.</Note>
+      <Note icon="alert-triangle" tone="warning">Only TRON (TRC20) addresses work. A wrong address means lost payments, and Ceeneet cannot recover them.</Note>
     </Screen>
   );
 }

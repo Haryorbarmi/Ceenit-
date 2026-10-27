@@ -38,10 +38,10 @@ export default function LinkName() {
     >
       <Progress step={2} />
       <Text variant="h2">Choose your link name</Text>
-      <Text tone="secondary">This is your permanent Ceenit link. Buyers see it on every payment.</Text>
+      <Text tone="secondary">This is your permanent Ceeneet link. Buyers see it on every payment.</Text>
       <Input
         label="Your link"
-        prefix="ceenit.app/"
+        prefix="ceeneet.app/"
         value={name}
         onChangeText={(t) => update({ linkName: t.toLowerCase().replace(/[^a-z0-9-]/g, '') })}
         autoCapitalize="none"
@@ -62,7 +62,7 @@ export default function LinkName() {
         <Text variant="caption" tone="tertiary">How buyers will see you</Text>
         <View style={styles.avatar}><Text variant="h2" tone="inverse">{initial}</Text></View>
         <Text variant="h3">{data.shopName || 'Your shop'}</Text>
-        <Text variant="bodySmall" tone="secondary">ceenit.app/{name || 'your-name'}</Text>
+        <Text variant="bodySmall" tone="secondary">ceeneet.app/{name || 'your-name'}</Text>
         <Text variant="bodySmall" tone="tertiary">{data.city.split(',')[0]} · {data.category}</Text>
       </View>
     </Screen>

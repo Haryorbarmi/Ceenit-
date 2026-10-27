@@ -2,7 +2,7 @@ import { AppError, Ctx } from './context';
 
 // The seller's public page. Subscribed sellers get a verified tick, can change their photo, and collect likes from buyers.
 
-/** A paid plan that has not run out. A plan with no end date was given by Ceenit and counts as active. */
+/** A paid plan that has not run out. A plan with no end date was given by Ceeneet and counts as active. */
 export const isSubscribed = (s: { plan: string; plan_until: Date | null }) => s.plan !== 'free' && (!s.plan_until || s.plan_until.getTime() > Date.now());
 
 const PHOTO = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/]+=*$/;

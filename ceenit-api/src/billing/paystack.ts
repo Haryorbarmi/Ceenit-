@@ -2,7 +2,7 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 import { AppError } from '../domain/context';
 
 // A small client for Paystack, which takes the monthly subscription payments.
-// Money goes from the seller's card or bank straight to Ceenit's Paystack account. Ceenit never sees card details.
+// Money goes from the seller's card or bank straight to Ceeneet's Paystack account. Ceeneet never sees card details.
 
 type Fetch = typeof fetch;
 

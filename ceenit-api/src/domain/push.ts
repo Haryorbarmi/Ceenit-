@@ -29,7 +29,7 @@ export function compose(e: NotifyEvent, item?: string): { title: string; body: s
       return { title: 'You have been paid', body: `${e.detail}${what} is confirmed on TRON.` };
     case 'payment_flagged': {
       const [kind = '', amount = ''] = (e.detail ?? '').split(': ');
-      return { title: 'A payment needs your attention', body: `${amount}${what} ${flagWords[kind as keyof typeof flagWords] ?? 'does not match the invoice'}. Open Ceenit to review.` };
+      return { title: 'A payment needs your attention', body: `${amount}${what} ${flagWords[kind as keyof typeof flagWords] ?? 'does not match the invoice'}. Open Ceeneet to review.` };
     }
     case 'payment_unmatched':
       return { title: 'Unmatched payment', body: `${e.detail} arrived in your wallet but does not match any of your links.` };
@@ -38,9 +38,9 @@ export function compose(e: NotifyEvent, item?: string): { title: string; body: s
     case 'plan_ended':
       return { title: 'Your plan has ended', body: 'Your payments stay visible, but you cannot create new links until you subscribe again.' };
     case 'billing_failed':
-      return { title: 'Subscription payment failed', body: 'We could not charge you for your Ceenit plan. Check your payment method with Paystack so your plan does not end.' };
+      return { title: 'Subscription payment failed', body: 'We could not charge you for your Ceeneet plan. Check your payment method with Paystack so your plan does not end.' };
     case 'new_device':
-      return { title: 'New device logged in', body: `${e.detail || 'A device'} just logged in to your Ceenit account. If this was not you, open Security and log it out.` };
+      return { title: 'New device logged in', body: `${e.detail || 'A device'} just logged in to your Ceeneet account. If this was not you, open Security and log it out.` };
     case 'wallet_change_requested':
       return { title: 'Wallet change requested', body: `A new wallet (${e.detail}) will take over in 24 hours. If this was not you, open Wallet and cancel it now.` };
     case 'wallet_changed':
@@ -48,7 +48,7 @@ export function compose(e: NotifyEvent, item?: string): { title: string; body: s
     case 'invoice_expired':
       return { title: 'Link expired', body: `${item ?? 'A payment link'} expired without a payment.` };
     case 'link_requested':
-      return { title: 'New link request', body: `${e.detail || 'A buyer'} asked for a fresh link${what}. Open Ceenit to approve.` };
+      return { title: 'New link request', body: `${e.detail || 'A buyer'} asked for a fresh link${what}. Open Ceeneet to approve.` };
   }
 }
 

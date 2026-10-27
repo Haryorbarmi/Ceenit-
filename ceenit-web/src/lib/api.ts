@@ -1,8 +1,8 @@
 import type { Invoice, Seller, Status } from './types';
 
-// The buyer pages talk to the Ceenit API. The browser only ever talks to this web server, which calls the API on its behalf,
+// The buyer pages talk to the Ceeneet API. The browser only ever talks to this web server, which calls the API on its behalf,
 // so phones never need to reach the API directly.
-export const API_URL = process.env.CEENIT_API_URL ?? 'http://localhost:4000';
+export const API_URL = process.env.Ceeneet_API_URL ?? 'http://localhost:4000';
 
 /** What the API sends for a public invoice. Amounts are exact decimal strings. */
 export type ApiInvoice = {
@@ -37,7 +37,7 @@ export function toInvoice(p: ApiInvoice): Invoice {
 export async function fetchInvoice(id: string): Promise<Invoice | null> {
   const res = await fetch(`${API_URL}/v1/public/invoices/${encodeURIComponent(id)}`, { cache: 'no-store' });
   if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`Ceenit API returned ${res.status}`);
+  if (!res.ok) throw new Error(`Ceeneet API returned ${res.status}`);
   return toInvoice((await res.json()) as ApiInvoice);
 }
 
@@ -54,6 +54,6 @@ export async function fetchSeller(slug: string, visitor?: string): Promise<Selle
   const q = visitor ? `?visitor=${encodeURIComponent(visitor)}` : '';
   const res = await fetch(`${API_URL}/v1/public/sellers/${encodeURIComponent(slug)}${q}`, { cache: 'no-store' });
   if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`Ceenit API returned ${res.status}`);
+  if (!res.ok) throw new Error(`Ceeneet API returned ${res.status}`);
   return res.json();
 }

@@ -20,7 +20,7 @@ export function NewDemoLink() {
             const r = await fetch('/api/demo/new', { method: 'POST' });
             const j = await r.json();
             if (r.ok && j.id) router.push(`/pay/${j.id}`);
-            else setError('The Ceenit API did not answer. Is it running on port 4000?');
+            else setError('The Ceeneet API did not answer. Is it running on port 4000?');
           } finally {
             setBusy(false);
           }

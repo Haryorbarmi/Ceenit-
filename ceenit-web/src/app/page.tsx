@@ -6,7 +6,7 @@ export default function Home() {
   const dev = process.env.NODE_ENV !== 'production';
   return (
     <main className="page" style={{ justifyContent: 'center', gap: 'var(--sp-lg)' }}>
-      <h1 className="display">ceenit</h1>
+      <h1 className="display">Ceeneet</h1>
       <p className="body-lg secondary">USDT payments, confirmed.</p>
       {dev ? <NewDemoLink /> : null}
       {dev ? <Link className="btn outline" href="/emeka-autos">Open the demo seller page</Link> : null}

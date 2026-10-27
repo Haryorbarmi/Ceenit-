@@ -1,6 +1,6 @@
-# Ceenit: Accounts and Services Checklist
+# Ceeneet: Accounts and Services Checklist
 
-Everything Ceenit needs outside the code to run for real. Tick each box as you go.
+Everything Ceeneet needs outside the code to run for real. Tick each box as you go.
 
 **Rule for all keys:** never paste a password or secret key into a chat. Put it in the host's "environment variables" screen, or give it to me through a local `.env` file that stays out of the project files. For Expo, use an access token instead of your password.
 
@@ -29,10 +29,10 @@ Everything Ceenit needs outside the code to run for real. Tick each box as you g
 - **I do:** Write the deploy config
 
 ### [ ] 4. Domain name
-- **Why:** Buyers need a real link (`ceenit.app/pay/...`), and the app needs an API address (for example `api.ceenit.app`).
+- **Why:** Buyers need a real link (`ceeneet.app/pay/...`), and the app needs an API address (for example `api.ceeneet.app`).
 - **Where:** Any registrar
 - **Cost:** About $10–20 a year
-- **You decide:** Which domain. Check that `ceenit.app` is available.
+- **You decide:** Which domain. Check that `ceeneet.app` is available.
 
 ### [ ] 5. Buyer web hosting
 - **Why:** Serves the payment pages to buyers.
@@ -58,7 +58,7 @@ Everything Ceenit needs outside the code to run for real. Tick each box as you g
 - **Why:** Backup for sellers who don't get the WhatsApp code.
 - **Where:** Resend or Postmark
 - **Cost:** Free tier is enough to start
-- **You give me:** The API key, plus a sending address on your domain (for example `no-reply@ceenit.app`)
+- **You give me:** The API key, plus a sending address on your domain (for example `no-reply@ceeneet.app`)
 
 ---
 

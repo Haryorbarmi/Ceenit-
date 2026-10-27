@@ -14,8 +14,8 @@ const helvena = localFont({
 });
 
 export const metadata: Metadata = {
-  title: 'Ceenit · USDT payments, confirmed.',
-  description: 'Pay a seller in USDT. Ceenit confirms it on the blockchain.',
+  title: 'Ceeneet · USDT payments, confirmed.',
+  description: 'Pay a seller in USDT. Ceeneet confirms it on the blockchain.',
   // Payment pages are private to the buyer and seller. Keep them out of search results.
   robots: { index: false, follow: false },
 };

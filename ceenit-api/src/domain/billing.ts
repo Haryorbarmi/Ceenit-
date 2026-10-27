@@ -3,7 +3,7 @@ import { AppError, Ctx } from './context';
 import { newId } from './invoices';
 
 // Subscriptions. A seller pays for the Seller or Business plan on Paystack's own checkout page.
-// Ceenit then records the plan and the date it runs to. Free sellers can still see their first 5 payments after a plan ends.
+// Ceeneet then records the plan and the date it runs to. Free sellers can still see their first 5 payments after a plan ends.
 
 export type PlanKey = 'seller' | 'business';
 
@@ -127,7 +127,7 @@ export async function cancelSubscription(ctx: Ctx, sellerId: string): Promise<vo
 
 type WebhookEvent = { event: string; data: any };
 
-/** Paystack tells us about renewals and cancellations here. Needs a public web address, so it only runs once Ceenit is online. */
+/** Paystack tells us about renewals and cancellations here. Needs a public web address, so it only runs once Ceeneet is online. */
 export async function handleWebhook(ctx: Ctx, e: WebhookEvent): Promise<void> {
   const customerCode: string | undefined = e.data?.customer?.customer_code;
   const sellerByCustomer = async () => {

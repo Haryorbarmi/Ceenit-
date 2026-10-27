@@ -138,7 +138,7 @@ export async function declineRequest(ctx: Ctx, sellerId: string, requestId: stri
   if (!res.length) throw new AppError('not_found', 404);
 }
 
-/** The seller reviewed a flagged payment (late, underpaid or overpaid) and accepts it as Paid. Ceenit never decides this alone. */
+/** The seller reviewed a flagged payment (late, underpaid or overpaid) and accepts it as Paid. Ceeneet never decides this alone. */
 export async function resolvePayment(ctx: Ctx, sellerId: string, txId: string) {
   const [p] = await ctx.db.query<{ invoice_id: string | null; outcome: string; confirmed: boolean; success: boolean | null; resolved: boolean }>(
     `select p.invoice_id, p.outcome, p.confirmed, p.success, p.resolved from payments p join invoices i on i.id = p.invoice_id where p.tx_id = $1 and i.seller_id = $2`,

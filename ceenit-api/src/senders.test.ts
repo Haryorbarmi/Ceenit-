@@ -12,13 +12,13 @@ describe('login code delivery', () => {
     assert.equal(url, 'https://graph.facebook.com/v21.0/123/messages');
     assert.equal((init.headers as Record<string, string>)['Authorization'], 'Bearer tok');
     const body = JSON.parse(String(init.body));
-    assert.deepEqual(body, whatsappPayload('2348031234567', '482910', 'ceenit_login_code', 'en'));
+    assert.deepEqual(body, whatsappPayload('2348031234567', '482910', 'ceeneet_login_code', 'en'));
     assert.match(String(init.body), /482910/);
   });
 
   it('sends an email code through Resend', async () => {
     let body: any;
-    const send = makeCodeSender({ RESEND_API_KEY: 'k', MAIL_FROM: 'Ceenit <no-reply@example.com>' }, (async (_u: string, i: RequestInit) => { body = JSON.parse(String(i.body)); return ok(); }) as unknown as typeof fetch);
+    const send = makeCodeSender({ RESEND_API_KEY: 'k', MAIL_FROM: 'Ceeneet <no-reply@example.com>' }, (async (_u: string, i: RequestInit) => { body = JSON.parse(String(i.body)); return ok(); }) as unknown as typeof fetch);
     await send('a@b.com', 'email', '111222');
     assert.deepEqual(body.to, ['a@b.com']);
     assert.match(body.text, /111222/);

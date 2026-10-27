@@ -4,7 +4,7 @@ import { LikeButton } from '@/components/LikeButton';
 import { VerifiedBadge } from '@/components/VerifiedBadge';
 import { fetchSeller } from '@/lib/api';
 
-// ceenit.app/<seller>. Shows who the seller is. It has no payment function: buyers pay through a link from the seller.
+// ceeneet.app/<seller>. Shows who the seller is. It has no payment function: buyers pay through a link from the seller.
 export default async function SellerPage({ params }: { params: Promise<{ seller: string }> }) {
   const { seller: slug } = await params;
   const seller = await fetchSeller(slug);
@@ -19,7 +19,7 @@ export default async function SellerPage({ params }: { params: Promise<{ seller:
           {seller.verified ? <VerifiedBadge size={28} /> : null}
         </h1>
         <p className="secondary">{seller.category} · {seller.city}</p>
-        <p className="body-sm tertiary">On Ceenit since {seller.since}</p>
+        <p className="body-sm tertiary">On Ceeneet since {seller.since}</p>
         {seller.likesEnabled ? <LikeButton slug={seller.slug} initialLikes={seller.likes} /> : null}
       </div>
       <div className="note accent">
@@ -28,7 +28,7 @@ export default async function SellerPage({ params }: { params: Promise<{ seller:
       </div>
       <div className="grow" />
       <div className="center stack-sm">
-        <span className="wordmark">ceenit</span>
+        <span className="wordmark">Ceeneet</span>
         <span className="body-sm tertiary">USDT payments, confirmed.</span>
       </div>
     </main>

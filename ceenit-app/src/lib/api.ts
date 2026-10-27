@@ -1,6 +1,6 @@
 import Constants from 'expo-constants';
 
-// Where the Ceenit API lives. In development the app finds the computer running Expo and talks to
+// Where the Ceeneet API lives. In development the app finds the computer running Expo and talks to
 // port 4000 on it, so the address follows the Wi-Fi without any setup. In production set EXPO_PUBLIC_API_URL.
 function baseUrl(): string {
   const fromEnv = process.env.EXPO_PUBLIC_API_URL;
@@ -28,7 +28,7 @@ async function request<T>(method: 'GET' | 'POST', path: string, body?: unknown):
       body: body === undefined ? undefined : JSON.stringify(body),
     });
   } catch {
-    throw new ApiError('network', 'Could not reach Ceenit. Check your internet and try again.', 0);
+    throw new ApiError('network', 'Could not reach Ceeneet. Check your internet and try again.', 0);
   }
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new ApiError(data.error ?? 'error', data.message ?? 'Something went wrong. Try again.', res.status);

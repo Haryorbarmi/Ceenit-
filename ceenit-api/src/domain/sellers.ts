@@ -98,7 +98,7 @@ export async function logoutAll(ctx: Ctx, contact: string): Promise<void> {
   await ctx.db.query(`delete from sessions where contact = $1`, [contact]);
 }
 
-const RESERVED = ['admin', 'pay', 'support', 'ceenit', 'help', 'login', 'api', 'app', 'www', 'receipt', 'static', 'about', 'terms', 'privacy'];
+const RESERVED = ['admin', 'pay', 'support', 'ceeneet', 'ceenit', 'help', 'login', 'api', 'app', 'www', 'receipt', 'static', 'about', 'terms', 'privacy'];
 const LINK_NAME = /^[a-z0-9][a-z0-9-]{1,28}[a-z0-9]$/;
 
 export function checkLinkName(name: string): string | null {

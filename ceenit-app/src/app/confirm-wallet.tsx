@@ -44,7 +44,7 @@ export default function ConfirmWallet() {
       <Note icon="info" tone="accent">You can change this later. A change needs your PIN and takes effect after 24 hours.</Note>
       <CheckRow checked={terms} onPress={() => setTerms((v) => !v)}>I agree to the Terms and Privacy Policy.</CheckRow>
       <CheckRow checked={understand} onPress={() => setUnderstand((v) => !v)}>
-        I understand Ceenit never holds my money and cannot reverse or recover payments.
+        I understand Ceeneet never holds my money and cannot reverse or recover payments.
       </CheckRow>
     </Screen>
   );

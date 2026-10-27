@@ -26,7 +26,7 @@ export default function NewLink() {
       <Text variant="h2" style={{ paddingTop: spacing.xs }}>New payment link</Text>
       <Input label="What are you selling?" value={draft.item} onChangeText={(item) => setDraft({ item })} placeholder="Toyota Camry 2015" autoCapitalize="words" />
       <Input label="Amount in USDT" value={draft.amount} onChangeText={(amount) => setDraft({ amount })} placeholder="8,000" keyboardType="decimal-pad" />
-      <Note icon="info" tone="accent">Ceenit adds a few cents (for example 8,000.37) so we can match the payment to this sale.</Note>
+      <Note icon="info" tone="accent">Ceeneet adds a few cents (for example 8,000.37) so we can match the payment to this sale.</Note>
       <Input label="Buyer name or phone (optional)" value={draft.reference} onChangeText={(reference) => setDraft({ reference })} placeholder="For your own records" />
       <View style={{ gap: spacing.xs }}>
         <Text variant="label">Link expires in</Text>

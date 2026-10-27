@@ -31,7 +31,7 @@ export default function ChangePin() {
       else { setFresh(value); setStep('again'); setProblem(''); }
     } else if (value === fresh) {
       await savePin(value);
-      Alert.alert('PIN changed', 'Use your new PIN next time you open Ceenit.', [{ text: 'OK', onPress: () => router.back() }]);
+      Alert.alert('PIN changed', 'Use your new PIN next time you open Ceeneet.', [{ text: 'OK', onPress: () => router.back() }]);
     } else {
       setFresh('');
       setStep('new');
