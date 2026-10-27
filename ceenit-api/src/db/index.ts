@@ -134,6 +134,17 @@ create table if not exists seller_likes (
 alter table sellers add column if not exists notify_detected boolean not null default true;
 alter table sellers add column if not exists notify_expired boolean not null default false;
 
+-- A wallet change waits here until starts_at, then becomes the active wallet. Cancelling or applying closes it.
+create table if not exists wallet_changes (
+  id text primary key,
+  seller_id text not null references sellers(id),
+  new_address text not null,
+  starts_at timestamptz not null,
+  status text not null default 'pending',
+  created_at timestamptz not null default now()
+);
+create unique index if not exists wallet_changes_one_pending on wallet_changes(seller_id) where status = 'pending';
+
 create table if not exists notifications (
   id text primary key,
   seller_id text not null references sellers(id),
@@ -152,6 +163,12 @@ create table if not exists sessions (
   created_at timestamptz not null default now(),
   expires_at timestamptz not null
 );
+
+-- Logged-in devices. The id is the first part of the token's hash, so it can be shown without exposing the login token.
+alter table sessions add column if not exists id text;
+alter table sessions add column if not exists device_name text;
+alter table sessions add column if not exists last_active_at timestamptz not null default now();
+update sessions set id = substr(token_hash, 1, 12) where id is null;
 `;
 
 type Runner = { query: (sql: string, params?: unknown[]) => Promise<{ rows: any[] }> };

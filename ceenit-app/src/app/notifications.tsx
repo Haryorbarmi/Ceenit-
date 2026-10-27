@@ -5,6 +5,7 @@ import { Icon, IconName } from '@/components/Icon';
 import { Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
 import { AppNotification } from '@/lib/api';
+import { timeAgo } from '@/lib/format';
 import { openFromAlert } from '@/lib/push';
 import { useInbox } from '@/state/inbox';
 import { color, radius, spacing, tone as palette, ToneName } from '@/theme/tokens';
@@ -15,17 +16,11 @@ const look: Record<string, { icon: IconName; tone: ToneName }> = {
   payment_flagged: { icon: 'alert-triangle', tone: 'warning' },
   payment_unmatched: { icon: 'help-circle', tone: 'warning' },
   invoice_expired: { icon: 'x-circle', tone: 'error' },
+  new_device: { icon: 'smartphone', tone: 'warning' },
+  wallet_change_requested: { icon: 'credit-card', tone: 'warning' },
+  wallet_changed: { icon: 'credit-card', tone: 'success' },
   link_requested: { icon: 'refresh-cw', tone: 'accent' },
 };
-
-function ago(iso: string): string {
-  const s = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
-  if (s < 60) return 'just now';
-  if (s < 3600) return `${Math.floor(s / 60)} min ago`;
-  if (s < 86400) return `${Math.floor(s / 3600)} hr ago`;
-  if (s < 172800) return 'yesterday';
-  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-}
 
 function Row({ n }: { n: AppNotification }) {
   const l = look[n.type] ?? { icon: 'bell' as IconName, tone: 'accent' as ToneName };
@@ -37,7 +32,7 @@ function Row({ n }: { n: AppNotification }) {
       <View style={{ flex: 1, gap: spacing.xxs }}>
         <View style={styles.top}>
           <Text variant="bodyMedium" style={{ flex: 1 }}>{n.title}</Text>
-          <Text variant="caption" tone="tertiary">{ago(n.at)}</Text>
+          <Text variant="caption" tone="tertiary">{timeAgo(n.at)}</Text>
         </View>
         <Text variant="bodySmall" tone="secondary">{n.body}</Text>
       </View>

@@ -33,6 +33,12 @@ export function compose(e: NotifyEvent, item?: string): { title: string; body: s
     }
     case 'payment_unmatched':
       return { title: 'Unmatched payment', body: `${e.detail} arrived in your wallet but does not match any of your links.` };
+    case 'new_device':
+      return { title: 'New device logged in', body: `${e.detail || 'A device'} just logged in to your Ceenit account. If this was not you, open Security and log it out.` };
+    case 'wallet_change_requested':
+      return { title: 'Wallet change requested', body: `A new wallet (${e.detail}) will take over in 24 hours. If this was not you, open Wallet and cancel it now.` };
+    case 'wallet_changed':
+      return { title: 'Your wallet has changed', body: `New payment links now go to ${e.detail}. Links made earlier still pay the old wallet.` };
     case 'invoice_expired':
       return { title: 'Link expired', body: `${item ?? 'A payment link'} expired without a payment.` };
     case 'link_requested':

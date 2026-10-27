@@ -27,3 +27,13 @@ export const formatCountdown = (expiresAt: number, now: number): string | null =
 };
 
 export const isTronAddress = (a: string): boolean => /^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(a);
+
+/** "just now", "5 min ago", "3 hr ago", "yesterday", then a date. */
+export function timeAgo(iso: string): string {
+  const s = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
+  if (s < 60) return 'just now';
+  if (s < 3600) return `${Math.floor(s / 60)} min ago`;
+  if (s < 86400) return `${Math.floor(s / 3600)} hr ago`;
+  if (s < 172800) return 'yesterday';
+  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+}

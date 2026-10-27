@@ -8,7 +8,8 @@ import { listNotifications, markAllRead } from '../domain/inbox';
 import { AppError, Ctx } from '../domain/context';
 import { createInvoice, getSellerInvoice, listInvoices, paidCount, toSellerView } from '../domain/invoices';
 import { approveRequest, declineRequest, listRequests, publicInvoice, requestNewLink, resolvePayment } from '../domain/links';
-import { contactForToken, getSellerByContact, linkNameAvailable, logoutAll, registerSeller, requestCode, verifyCode } from '../domain/sellers';
+import { contactForToken, getSellerByContact, linkNameAvailable, listSessions, logoutAll, registerSeller, requestCode, revokeSession, verifyCode } from '../domain/sellers';
+import { cancelWalletChange, pendingWalletChange, requestWalletChange } from '../domain/wallet';
 import { formatUsdt, parseUsdt } from '../money';
 import { hex20ToAddress, isValidTronAddress } from '../tron/address';
 import type { FakeTron } from '../tron/fake';
@@ -122,12 +123,22 @@ export function buildServer(ctx: Ctx, opts: { fake?: FakeTron } = {}) {
   });
 
   app.post('/v1/auth/verify-code', async (req) => {
-    const b = z.object({ method, contact: z.string().min(5).max(120), code: z.string().regex(/^\d{6}$/) }).parse(req.body);
-    return verifyCode(ctx, b.method, b.contact, b.code);
+    const b = z.object({ method, contact: z.string().min(5).max(120), code: z.string().regex(/^\d{6}$/), device: z.string().max(80).optional() }).parse(req.body);
+    return verifyCode(ctx, b.method, b.contact, b.code, b.device);
   });
 
   app.post('/v1/auth/logout-all', async (req) => {
     await logoutAll(ctx, await contactOf(req));
+    return { ok: true };
+  });
+
+  // Logged-in devices.
+  const tokenOf = (req: FastifyRequest) => /^Bearer (\S+)$/.exec(req.headers.authorization ?? '')?.[1] ?? '';
+  app.get('/v1/sessions', async (req) => listSessions(ctx, await contactOf(req), tokenOf(req)));
+  app.post('/v1/sessions/:id/revoke', async (req) => {
+    const contact = await contactOf(req);
+    const { id } = z.object({ id: z.string().min(6).max(40) }).parse(req.params);
+    await revokeSession(ctx, contact, id);
     return { ok: true };
   });
 
@@ -163,6 +174,7 @@ export function buildServer(ctx: Ctx, opts: { fake?: FakeTron } = {}) {
       cancelled: s.sub_cancelled,
       /** A paid plan whose paid month has run out. The account can still be read but cannot create links. */
       planEnded: s.plan !== 'free' && !!s.plan_until && s.plan_until.getTime() < Date.now(),
+      pendingWalletChange: await pendingWalletChange(ctx, s.id),
       notifyDetected: s.notify_detected,
       notifyExpired: s.notify_expired,
       subscribed: isSubscribed(s),
@@ -250,6 +262,23 @@ export function buildServer(ctx: Ctx, opts: { fake?: FakeTron } = {}) {
   });
 
   // The app registers this phone for alerts after login, and removes it on log out.
+  // Wallet change: ask for a code, then submit the new address with it. The new wallet starts after the wait. It can be cancelled while waiting.
+  app.post('/v1/wallet/request-code', async (req) => {
+    const seller = await sellerOf(req);
+    return { sent: true, ...(await requestCode(ctx, seller.contact_method, seller.contact)) };
+  });
+  app.post('/v1/wallet/change', async (req, reply) => {
+    const seller = await sellerOf(req);
+    const b = z.object({ address: z.string().length(34), code: z.string().regex(/^\d{6}$/) }).parse(req.body);
+    await requestWalletChange(ctx, seller, b.address, b.code);
+    return reply.code(201).send(await meView((await getSellerByContact(ctx, seller.contact))!));
+  });
+  app.post('/v1/wallet/change/cancel', async (req) => {
+    const seller = await sellerOf(req);
+    await cancelWalletChange(ctx, seller.id);
+    return meView((await getSellerByContact(ctx, seller.contact))!);
+  });
+
   // Alert choices. Only the two switchable alerts can be changed; payment, flagged-payment and link-request alerts always stay on.
   app.post('/v1/me/notifications', async (req) => {
     const seller = await sellerOf(req);

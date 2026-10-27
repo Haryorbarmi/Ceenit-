@@ -27,6 +27,7 @@
       "expo-font",
       "expo-splash-screen",
       "expo-notifications",
+      ["expo-local-authentication", { "faceIDPermission": "Ceenit uses Face ID so you can open the app without typing your PIN." }],
       ["expo-image-picker", { "photosPermission": "Ceenit uses your photos so you can choose your shop photo." }]
     ],
     "scheme": "ceenit",

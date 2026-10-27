@@ -6,7 +6,7 @@ import type { TronClient } from '../tron/types';
 
 /** Things the seller should hear about. In the app these become push notifications. */
 export type NotifyEvent = {
-  type: 'payment_detected' | 'payment_confirmed' | 'payment_flagged' | 'payment_unmatched' | 'link_requested' | 'invoice_expired';
+  type: 'payment_detected' | 'payment_confirmed' | 'payment_flagged' | 'payment_unmatched' | 'link_requested' | 'invoice_expired' | 'new_device' | 'wallet_change_requested' | 'wallet_changed';
   sellerId: string;
   invoiceId?: string;
   detail?: string;

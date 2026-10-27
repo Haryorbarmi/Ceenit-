@@ -1,5 +1,6 @@
 import { classify, InvoiceLite } from '../domain/match';
 import { Ctx } from '../domain/context';
+import { applyDueWalletChanges } from '../domain/wallet';
 import { receivedFromLogs, runChecks } from '../domain/verify';
 import { formatUsdt } from '../money';
 import type { Transfer } from '../tron/types';
@@ -47,6 +48,7 @@ export class Watcher {
   }
 
   private async sweepExpired(): Promise<void> {
+    await applyDueWalletChanges(this.ctx);
     const expired = await this.ctx.db.query<{ id: string; seller_id: string }>(`update invoices set status = 'expired' where status = 'pending' and expires_at < now() returning id, seller_id`);
     for (const i of expired) await this.ctx.notifier.notify({ type: 'invoice_expired', sellerId: i.seller_id, invoiceId: i.id });
   }

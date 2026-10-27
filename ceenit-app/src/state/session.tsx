@@ -1,4 +1,6 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import * as Device from 'expo-device';
+import * as LocalAuthentication from 'expo-local-authentication';
 import * as SecureStore from 'expo-secure-store';
 import { api, ApiError, Me, Method, setToken } from '@/lib/api';
 import { forgetAlerts, registerForAlerts } from '@/lib/push';
@@ -13,6 +15,10 @@ type Ctx = {
   me: Me | null;
   unlocked: boolean;
   hasPin: boolean;
+  /** Unlock with Face ID or fingerprint instead of typing the PIN. */
+  biometric: boolean;
+  /** Returns false if the phone did not confirm it was the owner. */
+  setBiometric: (on: boolean) => Promise<boolean>;
   /** Ask for a login code. Returns the code itself only when the API is running in development. */
   requestCode: (method: Method, contact: string) => Promise<string | undefined>;
   /** Check the code. Returns true when this contact already has an account. */
@@ -36,11 +42,13 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [me, setMeState] = useState<Me | null>(null);
   const [pin, setPin] = useState<string | null>(null);
   const [unlocked, setUnlocked] = useState(false);
+  const [biometric, setBiometricState] = useState(false);
 
   useEffect(() => {
     (async () => {
-      const [token, storedPin] = await Promise.all([get('token'), get('pin')]);
+      const [token, storedPin, bio] = await Promise.all([get('token'), get('pin'), get('biometric')]);
       setPin(storedPin);
+      setBiometricState(bio === '1');
       if (!token) return setStatus('out');
       setToken(token);
       try {
@@ -66,7 +74,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const requestCode = useCallback(async (method: Method, contact: string) => (await api.requestCode(method, contact)).devCode, []);
 
   const verifyCode = useCallback(async (method: Method, contact: string, code: string) => {
-    const r = await api.verifyCode(method, contact, code);
+    const r = await api.verifyCode(method, contact, code, Device.modelName ?? Device.deviceName ?? 'This phone');
     setToken(r.token);
     await set('token', r.token);
     if (r.hasAccount) {
@@ -93,19 +101,32 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const checkPin = useCallback(async (p: string) => p === pin, [pin]);
 
+  const setBiometric = useCallback(async (on: boolean) => {
+    if (on) {
+      const ok = await LocalAuthentication.authenticateAsync({ promptMessage: 'Confirm it is you to turn this on' });
+      if (!ok.success) return false;
+      await set('biometric', '1');
+    } else {
+      await del('biometric');
+    }
+    setBiometricState(on);
+    return true;
+  }, []);
+
   const logout = useCallback(async () => {
     await forgetAlerts();
     setToken(null);
-    await Promise.all([del('token'), del('pin')]);
+    await Promise.all([del('token'), del('pin'), del('biometric')]);
     setPin(null);
+    setBiometricState(false);
     setUnlocked(false);
     setMeState(null);
     setStatus('out');
   }, []);
 
   const value = useMemo<Ctx>(
-    () => ({ status, me, unlocked, hasPin: !!pin, requestCode, verifyCode, setMe, refreshMe, savePin, checkPin, unlock: () => setUnlocked(true), logout }),
-    [status, me, unlocked, pin, requestCode, verifyCode, setMe, refreshMe, savePin, checkPin, logout],
+    () => ({ status, me, unlocked, hasPin: !!pin, biometric, setBiometric, requestCode, verifyCode, setMe, refreshMe, savePin, checkPin, unlock: () => setUnlocked(true), logout }),
+    [status, me, unlocked, pin, biometric, setBiometric, requestCode, verifyCode, setMe, refreshMe, savePin, checkPin, logout],
   );
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }

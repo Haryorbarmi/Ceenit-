@@ -54,6 +54,8 @@ export type Me = {
   planEnded: boolean;
   /** Subscribed sellers get the verified tick, can change their photo and collect likes. */
   /** Alert choices. Payment found is on by default; link expired is off by default. */
+  /** A new wallet waiting to start, or null. */
+  pendingWalletChange: { address: string; startsAt: string } | null;
   notifyDetected: boolean;
   notifyExpired: boolean;
   subscribed: boolean;
@@ -100,15 +102,22 @@ export type LinkRequest = { id: string; invoiceId: string; buyerName: string; it
 export type AppNotification = { id: string; type: string; title: string; body: string; invoiceId: string | null; at: string; read: boolean };
 export type Inbox = { unread: number; items: AppNotification[] };
 
+export type DeviceSession = { id: string; device: string; lastActive: string; current: boolean };
+
 export const api = {
   requestCode: (method: Method, contact: string) => request<{ sent: boolean; devCode?: string }>('POST', '/v1/auth/request-code', { method, contact }),
-  verifyCode: (method: Method, contact: string, code: string) => request<{ token: string; hasAccount: boolean }>('POST', '/v1/auth/verify-code', { method, contact, code }),
+  verifyCode: (method: Method, contact: string, code: string, device?: string) => request<{ token: string; hasAccount: boolean }>('POST', '/v1/auth/verify-code', { method, contact, code, device }),
   walletValid: (address: string) => request<{ valid: boolean }>('GET', `/v1/wallets/${encodeURIComponent(address)}/check`),
   linkNameAvailable: (name: string) => request<{ available: boolean }>('GET', `/v1/link-names/${encodeURIComponent(name)}`),
   register: (b: { method: Method; fullName: string; shopName: string; category: string; city: string; linkName: string; wallet: string }) => request<Me>('POST', '/v1/sellers', b),
   rate: () => request<{ ngnPerUsdt: number }>('GET', '/v1/rate'),
   me: () => request<Me>('GET', '/v1/me'),
   setPhoto: (photo: string | null) => request<Me>('POST', '/v1/me/photo', { photo }),
+  sessions: () => request<DeviceSession[]>('GET', '/v1/sessions'),
+  revokeSession: (id: string) => request<{ ok: boolean }>('POST', `/v1/sessions/${encodeURIComponent(id)}/revoke`, {}),
+  walletRequestCode: () => request<{ sent: boolean; devCode?: string }>('POST', '/v1/wallet/request-code', {}),
+  changeWallet: (address: string, code: string) => request<Me>('POST', '/v1/wallet/change', { address, code }),
+  cancelWalletChange: () => request<Me>('POST', '/v1/wallet/change/cancel', {}),
   logoutAll: () => request<{ ok: boolean }>('POST', '/v1/auth/logout-all'),
   checkout: (plan: 'seller' | 'business') => request<{ url: string; reference: string }>('POST', '/v1/billing/checkout', { plan }),
   verifyBilling: (reference: string) => request<{ active: boolean }>('POST', '/v1/billing/verify', { reference }),
