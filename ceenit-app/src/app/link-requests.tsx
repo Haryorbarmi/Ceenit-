@@ -7,9 +7,11 @@ import { Text } from '@/components/Text';
 import { api, ApiError, LinkRequest } from '@/lib/api';
 import { formatUsdt } from '@/lib/format';
 import { useLinks } from '@/state/links';
-import { color, radius, spacing, tone } from '@/theme/tokens';
+import { useStyles } from '@/theme/theme';
+import { radius, spacing, Theme } from '@/theme/tokens';
 
 function RequestCard({ q, onDone }: { q: LinkRequest; onDone: (newId?: string) => void }) {
+  const styles = useStyles(makeStyles);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
@@ -71,7 +73,7 @@ export default function LinkRequests() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ color, tone }: Theme) => StyleSheet.create({
   card: { gap: spacing.sm, padding: spacing.md, borderRadius: radius.lg, borderWidth: 1, borderColor: color.borderDefault },
   who: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   avatar: { width: 40, height: 40, borderRadius: 20, backgroundColor: tone.accent.solid, alignItems: 'center', justifyContent: 'center' },

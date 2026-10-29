@@ -1,12 +1,14 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { color, hues, radius, spacing, tone } from '@/theme/tokens';
+import { useStyles, useTheme } from '@/theme/theme';
+import { hues, radius, spacing, Theme } from '@/theme/tokens';
 import { Icon } from './Icon';
 import { Text } from './Text';
 
 const rows = [['1', '2', '3'], ['4', '5', '6'], ['7', '8', '9'], ['', '0', 'back']];
 
 export function Keypad({ onDigit, onBackspace }: { onDigit: (d: string) => void; onBackspace: () => void }) {
+  const styles = useStyles(makeStyles);
   return (
     <View style={styles.pad}>
       {rows.map((row, i) => (
@@ -40,6 +42,7 @@ export function Keypad({ onDigit, onBackspace }: { onDigit: (d: string) => void;
 
 /** Row of dots for PIN entry. */
 export function PinDots({ length = 6, filled }: { length?: number; filled: number }) {
+  const styles = useStyles(makeStyles);
   return (
     <View style={styles.dots}>
       {Array.from({ length }).map((_, i) => (
@@ -51,6 +54,8 @@ export function PinDots({ length = 6, filled }: { length?: number; filled: numbe
 
 /** Row of boxes for the 6-digit login code. */
 export function CodeBoxes({ value, length = 6 }: { value: string; length?: number }) {
+  const { color, tone } = useTheme();
+  const styles = useStyles(makeStyles);
   return (
     <View style={styles.boxes}>
       {Array.from({ length }).map((_, i) => {
@@ -68,7 +73,7 @@ export function CodeBoxes({ value, length = 6 }: { value: string; length?: numbe
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ color, tone }: Theme) => StyleSheet.create({
   pad: { gap: spacing.xs },
   row: { flexDirection: 'row', gap: spacing.xs },
   key: { flex: 1, height: 56, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },

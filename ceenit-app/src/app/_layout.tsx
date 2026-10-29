@@ -12,6 +12,7 @@ import { OnboardingProvider } from '@/state/onboarding';
 import { InboxProvider } from '@/state/inbox';
 import { LinksProvider } from '@/state/links';
 import { SessionProvider, useSession } from '@/state/session';
+import { ThemeProvider } from '@/theme/theme';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -38,17 +39,19 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
+      <ThemeProvider>
       <SessionProvider>
         <OnboardingProvider>
           <LinksProvider>
             <InboxProvider>
-              <StatusBar style="dark" />
+              <StatusBar style="auto" />
               <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right' }} />
               <BootOverlay />
             </InboxProvider>
           </LinksProvider>
         </OnboardingProvider>
       </SessionProvider>
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }

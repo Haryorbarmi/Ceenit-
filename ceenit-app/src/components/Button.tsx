@@ -1,5 +1,6 @@
 import { Pressable, StyleProp, StyleSheet, ViewStyle } from 'react-native';
-import { color, radius, spacing } from '@/theme/tokens';
+import { useTheme } from '@/theme/theme';
+import { radius, spacing } from '@/theme/tokens';
 import { Text } from './Text';
 
 type Variant = 'primary' | 'secondary' | 'outline' | 'text';
@@ -15,15 +16,14 @@ type Props = {
 };
 
 export function Button({ label, onPress, variant = 'primary', inverse, disabled, style }: Props) {
+  const { color } = useTheme();
   const isText = variant === 'text';
   const bg =
-    variant === 'primary' ? (inverse ? color.bgPage : color.bgInverse)
+    variant === 'primary' ? (inverse ? color.textInverse : color.bgAction)
     : variant === 'secondary' ? color.bgSubtle
     : 'transparent';
-  const textTone =
-    variant === 'primary' ? (inverse ? 'primary' : 'inverse')
-    : inverse ? 'inverse'
-    : 'primary';
+  const onPrimary = inverse ? color.bgInverse : color.textOnAction;
+  const textColor = variant === 'primary' ? onPrimary : inverse ? color.textInverse : color.textPrimary;
 
   return (
     <Pressable
@@ -34,11 +34,11 @@ export function Button({ label, onPress, variant = 'primary', inverse, disabled,
       style={({ pressed }) => [
         styles.base,
         { backgroundColor: bg, height: isText ? 44 : 52, opacity: disabled ? 0.4 : pressed ? 0.8 : 1 },
-        variant === 'outline' && { borderWidth: 1, borderColor: inverse ? color.borderStrong : color.borderStrong },
+        variant === 'outline' && { borderWidth: 1, borderColor: color.borderStrong },
         style,
       ]}
     >
-      <Text variant="label" tone={textTone}>{label}</Text>
+      <Text variant="label" style={{ color: textColor }}>{label}</Text>
     </Pressable>
   );
 }

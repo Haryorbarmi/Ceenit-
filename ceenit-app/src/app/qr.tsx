@@ -6,9 +6,11 @@ import { Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
 import { formatUsdt } from '@/lib/format';
 import { useLinks } from '@/state/links';
-import { color, radius, spacing } from '@/theme/tokens';
+import { useStyles } from '@/theme/theme';
+import { radius, spacing, Theme } from '@/theme/tokens';
 
 export default function QrScreen() {
+  const styles = useStyles(makeStyles);
   const { id } = useLocalSearchParams<{ id: string }>();
   const link = useLinks().getInvoice(String(id));
   if (!link) return null;
@@ -30,7 +32,7 @@ export default function QrScreen() {
       </View>
       <View style={styles.qrWrap}>
         <View style={styles.qr}>
-          <QRCode value={url} size={220} color={color.textPrimary} backgroundColor={color.bgPage} />
+          <QRCode value={url} size={220} color="#000000" backgroundColor="#ffffff" />
         </View>
       </View>
       <Text variant="bodyMedium" align="center">{link.url.replace(/^https?:\/\//, '')}</Text>
@@ -39,7 +41,7 @@ export default function QrScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ color }: Theme) => StyleSheet.create({
   qrWrap: { alignItems: 'center', paddingVertical: spacing.lg },
-  qr: { padding: spacing.lg, borderRadius: radius.lg, borderWidth: 1, borderColor: color.borderDefault, backgroundColor: color.bgPage },
+  qr: { padding: spacing.lg, borderRadius: radius.lg, borderWidth: 1, borderColor: color.borderDefault, backgroundColor: '#ffffff' },
 });

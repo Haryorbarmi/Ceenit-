@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { color, radius, spacing, tone as palette, ToneName } from '@/theme/tokens';
+import { useStyles, useTheme } from '@/theme/theme';
+import { radius, spacing, Theme, ToneName } from '@/theme/tokens';
 import { Icon, IconName } from './Icon';
 import { StatusChip } from './Chips';
 import { Text } from './Text';
@@ -15,6 +16,8 @@ const icons: Record<Txn['status'], IconName> = {
 const tones: Record<Txn['status'], ToneName> = { Paid: 'success', Pending: 'accent', Expired: 'error', 'Needs attention': 'warning' };
 
 export function TxnRow({ txn, onPress }: { txn: Txn; onPress?: () => void }) {
+  const { tone: palette } = useTheme();
+  const styles = useStyles(makeStyles);
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [styles.row, pressed && { opacity: 0.6 }]}>
       <View style={[styles.icon, { backgroundColor: palette[tones[txn.status]].bg }]}>
@@ -32,7 +35,7 @@ export function TxnRow({ txn, onPress }: { txn: Txn; onPress?: () => void }) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ color }: Theme) => StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',

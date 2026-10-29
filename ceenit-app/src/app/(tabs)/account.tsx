@@ -8,7 +8,8 @@ import { Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
 import { VerifiedBadge } from '@/components/VerifiedBadge';
 import { useSession } from '@/state/session';
-import { color, spacing, tone } from '@/theme/tokens';
+import { useStyles } from '@/theme/theme';
+import { spacing, Theme } from '@/theme/tokens';
 
 type Row = { icon: IconName; title: string; value?: string; locked?: boolean; onPress?: () => void };
 
@@ -24,6 +25,7 @@ const rowsFor = (plan: string, wallet: string, logout: () => void): Row[] => [
 ];
 
 export default function Account() {
+  const styles = useStyles(makeStyles);
   const { me, logout, refreshMe } = useSession();
   const [pulling, setPulling] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -67,7 +69,7 @@ export default function Account() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ color }: Theme) => StyleSheet.create({
   profile: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.md },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.md, borderBottomWidth: 1, borderBottomColor: color.borderDefault },

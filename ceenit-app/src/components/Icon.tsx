@@ -1,5 +1,5 @@
 import { Feather } from '@expo/vector-icons';
-import { color, tone as palette } from '@/theme/tokens';
+import { useTheme } from '@/theme/theme';
 
 export type IconName = React.ComponentProps<typeof Feather>['name'];
 
@@ -11,17 +11,17 @@ type Props = {
   tint?: string;
 };
 
-const tones = {
-  primary: color.textPrimary,
-  secondary: color.textSecondary,
-  tertiary: color.textTertiary,
-  inverse: color.textInverse,
-  accent: palette.accent.text,
-  success: palette.success.text,
-  error: palette.error.text,
-  warning: palette.warning.text,
-};
-
 export function Icon({ name, size = 24, tone = 'primary', tint }: Props) {
+  const { color, tone: palette } = useTheme();
+  const tones = {
+    primary: color.textPrimary,
+    secondary: color.textSecondary,
+    tertiary: color.textTertiary,
+    inverse: color.textInverse,
+    accent: palette.accent.text,
+    success: palette.success.text,
+    error: palette.error.text,
+    warning: palette.warning.text,
+  };
   return <Feather name={name} size={size} color={tint ?? tones[tone]} />;
 }

@@ -4,10 +4,12 @@ import { Button } from '@/components/Button';
 import { Icon } from '@/components/Icon';
 import { Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
-import { color, radius, spacing, tone } from '@/theme/tokens';
+import { useStyles } from '@/theme/theme';
+import { radius, spacing, Theme } from '@/theme/tokens';
 import { useSession } from '@/state/session';
 
 export default function Ready() {
+  const styles = useStyles(makeStyles);
   const { me } = useSession();
   const link = (me?.link ?? '').replace(/^https?:\/\//, '');
 
@@ -38,7 +40,7 @@ export default function Ready() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ color, tone }: Theme) => StyleSheet.create({
   center: { flex: 1, justifyContent: 'center', alignItems: 'stretch', gap: spacing.md },
   check: { width: 96, height: 96, borderRadius: 48, backgroundColor: tone.success.solid, alignItems: 'center', justifyContent: 'center', alignSelf: 'center' },
   link: {

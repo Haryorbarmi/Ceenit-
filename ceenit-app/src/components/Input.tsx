@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { StyleSheet, TextInput, TextInputProps, View } from 'react-native';
-import { color, fonts, radius, spacing, tone, type } from '@/theme/tokens';
+import { useStyles, useTheme } from '@/theme/theme';
+import { fonts, radius, spacing, Theme, type } from '@/theme/tokens';
 import { Icon } from './Icon';
 import { Text } from './Text';
 
@@ -15,6 +16,8 @@ type Props = Pick<
 };
 
 export function Input({ label, prefix, error, editable = true, ...rest }: Props) {
+  const { color, tone } = useTheme();
+  const styles = useStyles(makeStyles);
   const [focused, setFocused] = useState(false);
   const emphasised = focused || !!error;
   const edge = error ? tone.error.solid : focused ? tone.accent.solid : color.borderDefault;
@@ -50,7 +53,7 @@ export function Input({ label, prefix, error, editable = true, ...rest }: Props)
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ color }: Theme) => StyleSheet.create({
   wrap: { gap: spacing.xs },
   field: {
     height: 56,

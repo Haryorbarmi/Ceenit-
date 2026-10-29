@@ -1,6 +1,7 @@
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { color, radius, spacing, tone as palette, ToneName } from '@/theme/tokens';
+import { useStyles, useTheme } from '@/theme/theme';
+import { radius, spacing, Theme, ToneName } from '@/theme/tokens';
 import { Button } from './Button';
 import { Icon, IconName } from './Icon';
 import { Text } from './Text';
@@ -14,6 +15,8 @@ type Props = {
 
 /** The "Before you create this link" sheet. A live link cannot be cancelled, so the seller must accept this first. */
 export function DisclaimerSheet({ visible, expiryLabel, onClose, onConfirm }: Props) {
+  const { tone: palette } = useTheme();
+  const styles = useStyles(makeStyles);
   const points: { icon: IconName; text: string; tone: ToneName }[] = [
     { icon: 'check-circle', tone: 'success', text: 'The link goes live right away.' },
     { icon: 'credit-card', tone: 'accent', text: 'The buyer pays straight to your wallet. Ceeneet never touches the money.' },
@@ -44,7 +47,7 @@ export function DisclaimerSheet({ visible, expiryLabel, onClose, onConfirm }: Pr
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ color }: Theme) => StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)' },
   sheet: {
     backgroundColor: color.bgPage,

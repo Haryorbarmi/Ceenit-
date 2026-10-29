@@ -10,9 +10,11 @@ import { Text } from '@/components/Text';
 import { useSession } from '@/state/session';
 import { formatCountdown, formatUsdt } from '@/lib/format';
 import { statusOf, useLinks } from '@/state/links';
-import { color, radius, spacing, tone } from '@/theme/tokens';
+import { useStyles } from '@/theme/theme';
+import { radius, spacing, Theme } from '@/theme/tokens';
 
 export default function LinkReady() {
+  const styles = useStyles(makeStyles);
   const { id } = useLocalSearchParams<{ id: string }>();
   const { getInvoice } = useLinks();
   const { me } = useSession();
@@ -88,7 +90,7 @@ export default function LinkReady() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ color, tone }: Theme) => StyleSheet.create({
   center: { alignItems: 'center', gap: spacing.md, paddingTop: spacing.md },
   check: { width: 72, height: 72, borderRadius: 36, backgroundColor: tone.success.solid, alignItems: 'center', justifyContent: 'center' },
   linkCard: {

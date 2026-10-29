@@ -8,7 +8,8 @@ import { AppNotification } from '@/lib/api';
 import { timeAgo } from '@/lib/format';
 import { openFromAlert } from '@/lib/push';
 import { useInbox } from '@/state/inbox';
-import { color, radius, spacing, tone as palette, ToneName } from '@/theme/tokens';
+import { useStyles, useTheme } from '@/theme/theme';
+import { radius, spacing, ToneName, Theme } from '@/theme/tokens';
 
 const look: Record<string, { icon: IconName; tone: ToneName }> = {
   payment_confirmed: { icon: 'arrow-down-left', tone: 'success' },
@@ -26,6 +27,8 @@ const look: Record<string, { icon: IconName; tone: ToneName }> = {
 };
 
 function Row({ n }: { n: AppNotification }) {
+  const { tone: palette } = useTheme();
+  const styles = useStyles(makeStyles);
   const l = look[n.type] ?? { icon: 'bell' as IconName, tone: 'accent' as ToneName };
   return (
     <Pressable onPress={() => openFromAlert({ type: n.type, invoiceId: n.invoiceId ?? undefined })} style={({ pressed }) => [styles.row, !n.read && styles.unread, pressed && { opacity: 0.6 }]}>
@@ -46,6 +49,7 @@ function Row({ n }: { n: AppNotification }) {
 
 // The bell inbox. Opening it loads the latest alerts; the unread dots stay for this visit and clear when you leave.
 export default function Notifications() {
+  const styles = useStyles(makeStyles);
   const { inbox, refresh, markAllRead } = useInbox();
   const [pulling, setPulling] = useState(false);
 
@@ -71,7 +75,7 @@ export default function Notifications() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ color, tone: palette }: Theme) => StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md, paddingVertical: spacing.md, paddingHorizontal: spacing.xs, borderBottomWidth: 1, borderBottomColor: color.borderDefault },
   unread: { backgroundColor: palette.accent.bg, borderRadius: radius.md },
   icon: { width: 44, height: 44, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center' },

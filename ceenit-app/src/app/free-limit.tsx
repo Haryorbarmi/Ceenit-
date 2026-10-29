@@ -8,7 +8,8 @@ import { Note, Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
 import { api, ApiError } from '@/lib/api';
 import { useSession } from '@/state/session';
-import { color, radius, spacing, tone } from '@/theme/tokens';
+import { useStyles, useTheme } from '@/theme/theme';
+import { radius, spacing, Theme } from '@/theme/tokens';
 
 const plans = [
   { key: 'seller', name: 'Seller', price: '₦5,000/month', features: 'Unlimited links, alerts, receipts, full history' },
@@ -19,6 +20,8 @@ type Phase = 'choose' | 'paying' | 'done';
 
 // Shown when the free plan runs out, or a subscription ends. Payment happens on Paystack's own page.
 export default function FreeLimit() {
+  const { color, tone } = useTheme();
+  const styles = useStyles(makeStyles);
   const { me, refreshMe } = useSession();
   // A seller who already pays for a plan can only choose the other one here.
   const activePlan = me && me.plan !== 'free' && !me.planEnded && !me.cancelled ? me.plan : null;
@@ -131,7 +134,7 @@ export default function FreeLimit() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ color, tone }: Theme) => StyleSheet.create({
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: spacing.md },
   check: { width: 96, height: 96, borderRadius: 48, backgroundColor: tone.success.solid, alignItems: 'center', justifyContent: 'center' },
   close: { width: 40, height: 40, borderRadius: 20, borderWidth: 1, borderColor: color.borderDefault, alignItems: 'center', justifyContent: 'center' },

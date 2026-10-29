@@ -9,10 +9,13 @@ import { Text } from '@/components/Text';
 import { api, ApiError, DeviceSession } from '@/lib/api';
 import { timeAgo } from '@/lib/format';
 import { useSession } from '@/state/session';
-import { color, palette, radius, spacing, tone } from '@/theme/tokens';
+import { useStyles, useTheme } from '@/theme/theme';
+import { palette, radius, spacing, Theme } from '@/theme/tokens';
 
 // Security: change the PIN, unlock with Face ID, see which devices are logged in, and log them out.
 export default function Security() {
+  const { tone } = useTheme();
+  const styles = useStyles(makeStyles);
   const { biometric, setBiometric, logout } = useSession();
   const [devices, setDevices] = useState<DeviceSession[]>([]);
   const [canFace, setCanFace] = useState(false);
@@ -88,7 +91,7 @@ export default function Security() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ color }: Theme) => StyleSheet.create({
   groupTitle: { letterSpacing: 0.6, paddingHorizontal: spacing.xs },
   card: { borderWidth: 1, borderColor: color.borderDefault, borderRadius: radius.lg, paddingHorizontal: spacing.md },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.md },

@@ -6,12 +6,14 @@ import { Icon } from '@/components/Icon';
 import { Input } from '@/components/Input';
 import { Note, Progress, Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
-import { color, radius, spacing, tone } from '@/theme/tokens';
+import { useStyles } from '@/theme/theme';
+import { radius, spacing, Theme } from '@/theme/tokens';
 import { api } from '@/lib/api';
 import { isTronAddress } from '@/lib/format';
 import { useOnboarding } from '@/state/onboarding';
 
 export default function Wallet() {
+  const styles = useStyles(makeStyles);
   const { data, update } = useOnboarding();
   const address = data.wallet.trim();
   const shapeOk = isTronAddress(address);
@@ -60,7 +62,7 @@ export default function Wallet() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ color, tone }: Theme) => StyleSheet.create({
   network: {
     flexDirection: 'row',
     alignItems: 'center',

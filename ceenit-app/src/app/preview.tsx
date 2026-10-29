@@ -10,9 +10,11 @@ import { useRate } from '@/lib/rate';
 import { formatNaira, formatUsdt, parseAmount } from '@/lib/format';
 import { useLinks } from '@/state/links';
 import { useSession } from '@/state/session';
-import { color, radius, spacing, tone } from '@/theme/tokens';
+import { useStyles } from '@/theme/theme';
+import { radius, spacing, Theme } from '@/theme/tokens';
 
 function Row({ k, v, strong }: { k: string; v: string; strong?: boolean }) {
+  const styles = useStyles(makeStyles);
   return (
     <View style={styles.row}>
       <Text tone="tertiary">{k}</Text>
@@ -22,6 +24,7 @@ function Row({ k, v, strong }: { k: string; v: string; strong?: boolean }) {
 }
 
 export default function Preview() {
+  const styles = useStyles(makeStyles);
   const rate = useRate();
   const { draft, createLink } = useLinks();
   const { me } = useSession();
@@ -83,7 +86,7 @@ export default function Preview() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ color, tone }: Theme) => StyleSheet.create({
   card: {
     gap: spacing.md,
     padding: spacing.lg,

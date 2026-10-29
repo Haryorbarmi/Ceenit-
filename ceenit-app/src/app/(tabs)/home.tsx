@@ -14,9 +14,11 @@ import { formatNaira, formatUsdt } from '@/lib/format';
 import { useInbox } from '@/state/inbox';
 import { useLinks } from '@/state/links';
 import { useSession } from '@/state/session';
-import { color, hues, radius, spacing, tone } from '@/theme/tokens';
+import { useStyles, useTheme } from '@/theme/theme';
+import { hues, radius, spacing, Theme } from '@/theme/tokens';
 
 function SectionHead({ title, action }: { title: string; action?: string }) {
+  const styles = useStyles(makeStyles);
   return (
     <View style={styles.sectionHead}>
       <Text variant="h3">{title}</Text>
@@ -32,6 +34,8 @@ const greeting = () => {
 
 export default function Home() {
   const rate = useRate();
+  const { color, tone, isDark, toggle: toggleTheme } = useTheme();
+  const styles = useStyles(makeStyles);
   const { hidden, toggle: toggleHidden } = useHideBalance();
   const { inbox, refresh: refreshInbox } = useInbox();
   const { me, refreshMe } = useSession();
@@ -58,12 +62,17 @@ export default function Home() {
                 <Text variant="h3">{me?.shopName ?? ''}</Text>
               </View>
             </View>
-            <Pressable style={({ pressed }) => [styles.bell, pressed && { opacity: 0.6 }]} onPress={() => router.push('/notifications')} accessibilityRole="button" accessibilityLabel={inbox.unread ? `Notifications, ${inbox.unread} unread` : 'Notifications'}>
-              <Icon name="bell" size={22} />
-              {inbox.unread > 0 ? (
-                <View style={styles.badge}><Text variant="caption" tone="inverse" style={styles.badgeText}>{inbox.unread > 9 ? '9+' : inbox.unread}</Text></View>
-              ) : null}
-            </Pressable>
+            <View style={styles.actions}>
+              <Pressable style={({ pressed }) => [styles.bell, pressed && { opacity: 0.6 }]} onPress={toggleTheme} accessibilityRole="button" accessibilityLabel={isDark ? 'Switch to light mode' : 'Switch to dark mode'}>
+                <Icon name={isDark ? 'sun' : 'moon'} size={22} />
+              </Pressable>
+              <Pressable style={({ pressed }) => [styles.bell, pressed && { opacity: 0.6 }]} onPress={() => router.push('/notifications')} accessibilityRole="button" accessibilityLabel={inbox.unread ? `Notifications, ${inbox.unread} unread` : 'Notifications'}>
+                <Icon name="bell" size={22} />
+                {inbox.unread > 0 ? (
+                  <View style={styles.badge}><Text variant="caption" tone="inverse" style={styles.badgeText}>{inbox.unread > 9 ? '9+' : inbox.unread}</Text></View>
+                ) : null}
+              </Pressable>
+            </View>
           </View>
           <LinearGradient colors={['#000000', '#1a0b3d', '#4c1d95']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.summary}>
             <View pointerEvents="none" style={styles.glowA} />
@@ -156,8 +165,9 @@ export default function Home() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ color, tone }: Theme) => StyleSheet.create({
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: spacing.xs },
+  actions: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
   bell: { width: 44, height: 44, borderRadius: 22, borderWidth: 1, borderColor: color.borderDefault, alignItems: 'center', justifyContent: 'center' },
   badge: { position: 'absolute', top: -4, right: -4, minWidth: 20, height: 20, paddingHorizontal: 5, borderRadius: 10, backgroundColor: tone.accent.solid, borderWidth: 2, borderColor: color.bgPage, alignItems: 'center', justifyContent: 'center' },
   badgeText: { fontSize: 11, lineHeight: 14 },

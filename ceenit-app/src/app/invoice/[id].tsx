@@ -9,7 +9,8 @@ import { api, ApiError, Invoice, InvoicePayment } from '@/lib/api';
 import { useRate } from '@/lib/rate';
 import { formatNaira, formatUsdt } from '@/lib/format';
 import { statusOf, useLinks } from '@/state/links';
-import { color, radius, spacing } from '@/theme/tokens';
+import { useStyles } from '@/theme/theme';
+import { radius, spacing, Theme } from '@/theme/tokens';
 
 type Detail = Invoice & { payments: InvoicePayment[] };
 
@@ -22,6 +23,7 @@ const flagCopy = {
 } as const;
 
 function Row({ k, v }: { k: string; v: string }) {
+  const styles = useStyles(makeStyles);
   return (
     <View style={styles.row}>
       <Text tone="tertiary">{k}</Text>
@@ -31,6 +33,7 @@ function Row({ k, v }: { k: string; v: string }) {
 }
 
 export default function InvoiceDetail() {
+  const styles = useStyles(makeStyles);
   const rate = useRate();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { refresh } = useLinks();
@@ -119,7 +122,7 @@ export default function InvoiceDetail() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ color }: Theme) => StyleSheet.create({
   card: { borderWidth: 1, borderColor: color.borderDefault, borderRadius: radius.lg, paddingHorizontal: spacing.md, paddingVertical: spacing.xxs },
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.sm },
 });

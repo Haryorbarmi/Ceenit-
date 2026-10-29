@@ -8,12 +8,14 @@ import { Progress, Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
 import { reservedLinkNames } from '@/data/mock';
 import { api } from '@/lib/api';
-import { color, radius, spacing, tone } from '@/theme/tokens';
+import { useStyles } from '@/theme/theme';
+import { radius, spacing, Theme } from '@/theme/tokens';
 import { useOnboarding } from '@/state/onboarding';
 
 const rule = /^[a-z0-9](?:[a-z0-9-]{1,28})[a-z0-9]$/;
 
 export default function LinkName() {
+  const styles = useStyles(makeStyles);
   const { data, update } = useOnboarding();
   const name = data.linkName;
   const reserved = reservedLinkNames.includes(name);
@@ -69,7 +71,7 @@ export default function LinkName() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ color, tone }: Theme) => StyleSheet.create({
   avail: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
   preview: {
     alignItems: 'center',

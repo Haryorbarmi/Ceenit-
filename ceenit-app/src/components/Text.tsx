@@ -1,19 +1,8 @@
 import { Text as RNText, TextProps as RNTextProps } from 'react-native';
-import { color, tone as palette, type, TypeVariant } from '@/theme/tokens';
+import { useTheme } from '@/theme/theme';
+import { type, TypeVariant } from '@/theme/tokens';
 
 type Tone = 'primary' | 'secondary' | 'tertiary' | 'inverse' | 'muted' | 'accent' | 'success' | 'error' | 'warning';
-
-const tones: Record<Tone, string> = {
-  primary: color.textPrimary,
-  secondary: color.textSecondary,
-  tertiary: color.textTertiary,
-  inverse: color.textInverse,
-  muted: color.borderStrong,
-  accent: palette.accent.text,
-  success: palette.success.text,
-  error: palette.error.text,
-  warning: palette.warning.text,
-};
 
 type Props = RNTextProps & {
   variant?: TypeVariant;
@@ -22,6 +11,18 @@ type Props = RNTextProps & {
 };
 
 export function Text({ variant = 'body', tone = 'primary', align, style, ...rest }: Props) {
+  const { color, tone: palette } = useTheme();
+  const tones: Record<Tone, string> = {
+    primary: color.textPrimary,
+    secondary: color.textSecondary,
+    tertiary: color.textTertiary,
+    inverse: color.textInverse,
+    muted: color.textMuted,
+    accent: palette.accent.text,
+    success: palette.success.text,
+    error: palette.error.text,
+    warning: palette.warning.text,
+  };
   return (
     <RNText
       {...rest}

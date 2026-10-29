@@ -6,7 +6,8 @@ import { Note, Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
 import { api, ApiError, BillingPayment } from '@/lib/api';
 import { useSession } from '@/state/session';
-import { color, radius, spacing } from '@/theme/tokens';
+import { useStyles } from '@/theme/theme';
+import { radius, spacing, Theme } from '@/theme/tokens';
 
 const names: Record<string, string> = { free: 'Free', seller: 'Seller', business: 'Business' };
 const prices: Record<string, string> = { seller: '₦5,000 a month', business: '₦15,000 a month' };
@@ -14,6 +15,7 @@ const prices: Record<string, string> = { seller: '₦5,000 a month', business: '
 const day = (iso: string) => new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
 function Row({ k, v }: { k: string; v: string }) {
+  const styles = useStyles(makeStyles);
   return (
     <View style={styles.row}>
       <Text tone="tertiary">{k}</Text>
@@ -24,6 +26,7 @@ function Row({ k, v }: { k: string; v: string }) {
 
 // Plan and billing: what the seller is on, when it runs to, and a way to cancel.
 export default function Plan() {
+  const styles = useStyles(makeStyles);
   const { me, refreshMe } = useSession();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -110,7 +113,7 @@ export default function Plan() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ color }: Theme) => StyleSheet.create({
   card: { gap: spacing.xxs, padding: spacing.lg, borderRadius: radius.xl, borderWidth: 1, borderColor: color.borderDefault, backgroundColor: color.bgSurface },
   table: { borderWidth: 1, borderColor: color.borderDefault, borderRadius: radius.lg, paddingHorizontal: spacing.md },
   row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: spacing.sm },

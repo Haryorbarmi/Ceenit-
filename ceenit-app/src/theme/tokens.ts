@@ -37,19 +37,59 @@ export const tone = {
 } as const;
 export type ToneName = keyof typeof tone;
 
+/**
+ * Semantic colours. bgInverse, textInverse and textMuted are for surfaces that stay dark in both modes
+ * (the welcome screen, the balance card, avatars on purple), so they do not change. bgAction and textOnAction
+ * are the main button: black with white text in light mode, white with black text in dark mode.
+ */
 export const color = {
   bgPage: palette.white,
   bgSurface: palette.n50,
   bgSubtle: palette.n100,
   bgInverse: palette.black,
+  bgAction: palette.black,
   textPrimary: palette.n950,
   textSecondary: palette.n600,
   textTertiary: palette.n500,
   textInverse: palette.white,
+  textOnAction: palette.white,
+  textMuted: palette.n400,
   borderDefault: palette.n200,
   borderStrong: palette.n400,
   borderInverse: palette.black,
 } as const;
+
+export type ColorSet = { [K in keyof typeof color]: string };
+export type ToneSet = { [K in ToneName]: { bg: string; border: string; solid: string; text: string; onSolid: string } };
+
+const darkColor: ColorSet = {
+  ...color,
+  bgPage: palette.n950,
+  bgSurface: palette.n900,
+  bgSubtle: palette.n800,
+  bgAction: palette.white,
+  textPrimary: palette.n50,
+  textSecondary: palette.n400,
+  textTertiary: palette.n500,
+  textOnAction: palette.black,
+  borderDefault: palette.n800,
+  borderStrong: palette.n600,
+};
+
+/** Dark-mode tones: a deep tinted background, a brighter text colour, and the same solid colour so status stays recognisable. */
+function darkRole(h: (typeof hues)[keyof typeof hues], solid: string) {
+  return { bg: h[900], border: h[700], solid, text: h[400], onSolid: h[50] } as const;
+}
+const darkTone: ToneSet = {
+  accent: darkRole(hues.purple, hues.purple[600]),
+  success: darkRole(hues.green, hues.green[600]),
+  error: darkRole(hues.red, hues.red[600]),
+  warning: darkRole(hues.amber, hues.amber[600]),
+};
+
+export type Theme = { isDark: boolean; color: ColorSet; tone: ToneSet };
+export const lightTheme: Theme = { isDark: false, color, tone };
+export const darkTheme: Theme = { isDark: true, color: darkColor, tone: darkTone };
 
 export const spacing = { xxs: 4, xs: 8, sm: 12, md: 16, lg: 24, xl: 32, xxl: 48, xxxl: 64 } as const;
 

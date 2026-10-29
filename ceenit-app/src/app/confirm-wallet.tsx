@@ -5,10 +5,13 @@ import { Button } from '@/components/Button';
 import { Icon } from '@/components/Icon';
 import { Note, Progress, Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
-import { color, radius, spacing, tone } from '@/theme/tokens';
+import { useStyles, useTheme } from '@/theme/theme';
+import { radius, spacing, Theme } from '@/theme/tokens';
 import { useOnboarding } from '@/state/onboarding';
 
 function CheckRow({ checked, onPress, children }: { checked: boolean; onPress: () => void; children: string }) {
+  const { color, tone } = useTheme();
+  const styles = useStyles(makeStyles);
   return (
     <Pressable accessibilityRole="checkbox" accessibilityState={{ checked }} onPress={onPress} style={styles.checkRow}>
       <View style={[styles.box, checked ? { backgroundColor: tone.accent.solid } : { borderWidth: 2, borderColor: color.borderStrong }]}>
@@ -20,6 +23,7 @@ function CheckRow({ checked, onPress, children }: { checked: boolean; onPress: (
 }
 
 export default function ConfirmWallet() {
+  const styles = useStyles(makeStyles);
   const { data } = useOnboarding();
   const [terms, setTerms] = useState(false);
   const [understand, setUnderstand] = useState(false);
@@ -50,7 +54,7 @@ export default function ConfirmWallet() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ color }: Theme) => StyleSheet.create({
   card: {
     gap: spacing.md,
     padding: spacing.lg,

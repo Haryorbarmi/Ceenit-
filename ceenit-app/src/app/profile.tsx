@@ -10,10 +10,12 @@ import { Text } from '@/components/Text';
 import { VerifiedBadge } from '@/components/VerifiedBadge';
 import { api, ApiError } from '@/lib/api';
 import { useSession } from '@/state/session';
-import { color, radius, spacing, tone } from '@/theme/tokens';
+import { useStyles } from '@/theme/theme';
+import { radius, spacing, Theme } from '@/theme/tokens';
 
 // Edit profile. Only subscribed sellers can change their photo; they also get the verified tick and likes on their page.
 export default function Profile() {
+  const styles = useStyles(makeStyles);
   const { me, setMe } = useSession();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -87,7 +89,7 @@ export default function Profile() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ tone }: Theme) => StyleSheet.create({
   center: { alignItems: 'center', gap: spacing.xs, paddingVertical: spacing.md },
   avatar: { width: 112, height: 112, borderRadius: 56, backgroundColor: tone.accent.solid, alignItems: 'center', justifyContent: 'center', marginBottom: spacing.xs },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },

@@ -1,10 +1,12 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { color, radius, spacing, tone as palette, ToneName } from '@/theme/tokens';
+import { useTheme } from '@/theme/theme';
+import { radius, spacing, ToneName } from '@/theme/tokens';
 import { Icon, IconName } from './Icon';
 import { Text } from './Text';
 
 /** Selectable pill, e.g. category or expiry. */
 export function OptionChip({ label, selected, onPress }: { label: string; selected?: boolean; onPress?: () => void }) {
+  const { color, tone: palette } = useTheme();
   return (
     <Pressable
       accessibilityRole="button"
@@ -38,6 +40,7 @@ const statusTone: Record<Status, ToneName> = {
 
 /** Status is shown with colour, icon and label, so it still reads without colour. */
 export function StatusChip({ status }: { status: Status }) {
+  const { tone: palette } = useTheme();
   const t = statusTone[status];
   return (
     <View style={[styles.status, { backgroundColor: palette[t].bg, borderColor: palette[t].border }]}>

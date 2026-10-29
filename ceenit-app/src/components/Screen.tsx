@@ -2,7 +2,8 @@ import { ReactNode } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { color, radius, spacing, tone as palette, ToneName } from '@/theme/tokens';
+import { useStyles, useTheme } from '@/theme/theme';
+import { radius, spacing, Theme, ToneName } from '@/theme/tokens';
 import { Icon } from './Icon';
 import { Text } from './Text';
 
@@ -23,13 +24,15 @@ type Props = {
 };
 
 export function TopBar({ title, light }: { title?: string; light?: boolean }) {
+  const { color } = useTheme();
+  const styles = useStyles(makeStyles);
   return (
     <View style={styles.top}>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Back"
         onPress={() => (router.canGoBack() ? router.back() : undefined)}
-        style={[styles.back, light && { borderColor: color.textSecondary }]}
+        style={[styles.back, light && { borderColor: color.textMuted }]}
       >
         <Icon name="chevron-left" size={20} tone={light ? 'inverse' : 'primary'} />
       </Pressable>
@@ -41,10 +44,12 @@ export function TopBar({ title, light }: { title?: string; light?: boolean }) {
   );
 }
 
-export function Screen({ children, title, footer, background = color.bgPage, noBack, scroll = true, refreshControl, header }: Props) {
+export function Screen({ children, title, footer, background, noBack, scroll = true, refreshControl, header }: Props) {
+  const { color } = useTheme();
+  const styles = useStyles(makeStyles);
   const Body = scroll ? ScrollView : View;
   return (
-    <SafeAreaView style={[styles.root, { backgroundColor: background }]} edges={['top', 'bottom']}>
+    <SafeAreaView style={[styles.root, { backgroundColor: background ?? color.bgPage }]} edges={['top', 'bottom']}>
       {title !== undefined && !noBack ? <TopBar title={title} /> : null}
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         {header ? <View style={styles.header}>{header}</View> : null}
@@ -64,6 +69,8 @@ export function Screen({ children, title, footer, background = color.bgPage, noB
 
 /** Tinted box with an icon and short text. Tone picks the colour: accent for info, warning for risks, success for confirmations. Neutral when none. */
 export function Note({ icon, children, tone }: { icon: React.ComponentProps<typeof Icon>['name']; children: ReactNode; tone?: ToneName; strong?: boolean }) {
+  const { color, tone: palette } = useTheme();
+  const styles = useStyles(makeStyles);
   const p = tone ? palette[tone] : null;
   return (
     <View style={[styles.note, p ? { backgroundColor: p.bg, borderColor: p.border } : { borderColor: color.borderDefault }]}>
@@ -75,6 +82,8 @@ export function Note({ icon, children, tone }: { icon: React.ComponentProps<type
 
 /** Four-step progress bar used in sign up. */
 export function Progress({ step, total = 4 }: { step: number; total?: number }) {
+  const { color, tone: palette } = useTheme();
+  const styles = useStyles(makeStyles);
   return (
     <View style={styles.progress}>
       {Array.from({ length: total }).map((_, i) => (
@@ -84,7 +93,7 @@ export function Progress({ step, total = 4 }: { step: number; total?: number }) 
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ color }: Theme) => StyleSheet.create({
   root: { flex: 1 },
   top: { height: 56, paddingHorizontal: spacing.lg, flexDirection: 'row', alignItems: 'center' },
   back: {

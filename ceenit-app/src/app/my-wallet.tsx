@@ -8,7 +8,8 @@ import { Note, Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
 import { api, ApiError } from '@/lib/api';
 import { useSession } from '@/state/session';
-import { color, radius, spacing, tone } from '@/theme/tokens';
+import { useStyles } from '@/theme/theme';
+import { radius, spacing, Theme } from '@/theme/tokens';
 
 /** "TQn9 Y2kh DGZM …" so an address is easy to check by eye. */
 const blocks = (a: string) => a.match(/.{1,4}/g)?.join(' ') ?? a;
@@ -21,6 +22,7 @@ function countdown(startsAt: string, now: number): string {
 
 // Wallet: the address buyers pay into, and a protected way to change it.
 export default function MyWallet() {
+  const styles = useStyles(makeStyles);
   const { me, setMe, refreshMe } = useSession();
   const [now, setNow] = useState(() => Date.now());
   const [pulling, setPulling] = useState(false);
@@ -86,7 +88,7 @@ export default function MyWallet() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ color, tone }: Theme) => StyleSheet.create({
   card: { gap: spacing.sm, padding: spacing.lg, borderRadius: radius.xl, borderWidth: 1, borderColor: color.borderDefault, backgroundColor: color.bgSurface },
   top: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   active: { flexDirection: 'row', alignItems: 'center', gap: spacing.xxs },

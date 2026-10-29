@@ -1,14 +1,17 @@
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { useTheme } from '@/theme/theme';
 import { palette, tone } from '@/theme/tokens';
 
 // The system tab bar: on iOS 26 it is Apple's floating "liquid glass" bar (the same one WhatsApp uses),
 // and on older iPhones it is the standard frosted bar. It shrinks out of the way when you scroll down.
 export default function TabsLayout() {
+  const { isDark } = useTheme();
+  const idle = isDark ? palette.n500 : palette.n400;
   return (
     <NativeTabs
       tintColor={tone.accent.solid}
-      iconColor={{ default: palette.n400, selected: tone.accent.solid }}
-      labelStyle={{ default: { color: palette.n400, fontWeight: '400' }, selected: { color: tone.accent.solid, fontWeight: '700' } }}
+      iconColor={{ default: idle, selected: tone.accent.solid }}
+      labelStyle={{ default: { color: idle, fontWeight: '400' }, selected: { color: tone.accent.solid, fontWeight: '700' } }}
       minimizeBehavior="onScrollDown"
     >
       <NativeTabs.Trigger name="home">

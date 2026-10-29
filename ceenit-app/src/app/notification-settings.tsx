@@ -5,11 +5,14 @@ import { Note, Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
 import { api, ApiError } from '@/lib/api';
 import { useSession } from '@/state/session';
-import { color, palette, radius, spacing, tone } from '@/theme/tokens';
+import { useStyles, useTheme } from '@/theme/theme';
+import { palette, radius, spacing, Theme } from '@/theme/tokens';
 
 type RowProps = { title: string; hint: string; value: boolean; locked?: boolean; disabled?: boolean; onChange?: (v: boolean) => void };
 
 function Row({ title, hint, value, locked, disabled, onChange }: RowProps) {
+  const { tone } = useTheme();
+  const styles = useStyles(makeStyles);
   return (
     <View style={styles.row}>
       <View style={{ flex: 1, gap: spacing.xxs }}>
@@ -29,6 +32,7 @@ function Row({ title, hint, value, locked, disabled, onChange }: RowProps) {
 }
 
 function Group({ title, children }: { title: string; children: React.ReactNode }) {
+  const styles = useStyles(makeStyles);
   return (
     <View style={{ gap: spacing.xs }}>
       <Text variant="caption" tone="tertiary" style={styles.groupTitle}>{title.toUpperCase()}</Text>
@@ -76,7 +80,7 @@ export default function NotificationSettings() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ color }: Theme) => StyleSheet.create({
   groupTitle: { letterSpacing: 0.6, paddingHorizontal: spacing.xs },
   card: { borderWidth: 1, borderColor: color.borderDefault, borderRadius: radius.lg, paddingHorizontal: spacing.md },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.md },

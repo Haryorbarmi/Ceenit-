@@ -9,7 +9,8 @@ import { Text } from '@/components/Text';
 import { api, ApiError } from '@/lib/api';
 import { isTronAddress } from '@/lib/format';
 import { useSession } from '@/state/session';
-import { color, radius, spacing } from '@/theme/tokens';
+import { useStyles } from '@/theme/theme';
+import { radius, spacing, Theme } from '@/theme/tokens';
 
 type Step = 'address' | 'pin' | 'code' | 'done';
 
@@ -24,6 +25,7 @@ const masked = (contact: string) => (contact.includes('@') ? contact.replace(/^(
 
 // Change wallet: new address, then your PIN, then a code sent to you. The new wallet starts after a wait.
 export default function ChangeWallet() {
+  const styles = useStyles(makeStyles);
   const { me, setMe, checkPin } = useSession();
   const [step, setStep] = useState<Step>('address');
   const [address, setAddress] = useState('');
@@ -144,7 +146,7 @@ export default function ChangeWallet() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = ({ color }: Theme) => StyleSheet.create({
   timeline: { gap: spacing.xxs, padding: spacing.md, borderRadius: radius.lg, borderWidth: 1, borderColor: color.borderDefault },
   old: { gap: spacing.xxs, padding: spacing.md, borderRadius: radius.lg, backgroundColor: color.bgSurface },
 });
