@@ -2,7 +2,7 @@ import type { Invoice, Seller, Status } from './types';
 
 // The buyer pages talk to the Ceeneet API. The browser only ever talks to this web server, which calls the API on its behalf,
 // so phones never need to reach the API directly.
-export const API_URL = process.env.Ceeneet_API_URL ?? 'http://localhost:4000';
+export const API_URL = process.env.CEENEET_API_URL ?? 'http://localhost:4000';
 
 /** What the API sends for a public invoice. Amounts are exact decimal strings. */
 export type ApiInvoice = {
