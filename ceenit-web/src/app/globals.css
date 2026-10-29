@@ -31,6 +31,10 @@
   --border-default: var(--n200);
   --border-strong: var(--n400);
   --border-inverse: var(--black);
+  /* The main button: black with white text in light mode, white with black text in dark mode. */
+  --bg-action: var(--black);
+  --text-on-action: var(--white);
+  color-scheme: light dark;
 
   --sp-2xs: 4px;
   --sp-xs: 8px;
@@ -45,6 +49,28 @@
   --r-lg: 16px;
   --r-xl: 24px;
   --r-full: 9999px;
+}
+
+/* Dark mode follows the buyer's phone setting. The QR code keeps its white tile so it always scans. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-page: var(--n950);
+    --bg-surface: var(--n900);
+    --bg-subtle: var(--n800);
+    --bg-inverse: var(--n800);
+    --text-primary: var(--n50);
+    --text-secondary: var(--n400);
+    --text-tertiary: var(--n500);
+    --border-default: var(--n800);
+    --border-strong: var(--n600);
+    --bg-action: var(--white);
+    --text-on-action: var(--black);
+
+    --accent-bg: #2e1065; --accent-border: #6d28d9; --accent-text: #a78bfa;
+    --success-bg: #052e16; --success-border: #15803d; --success-text: #4ade80;
+    --error-bg: #450a0a; --error-border: #b91c1c; --error-text: #f87171;
+    --warning-bg: #451a03; --warning-border: #b45309; --warning-text: #fbbf24;
+  }
 }
 
 * { box-sizing: border-box; margin: 0; }
@@ -99,7 +125,7 @@ a { color: inherit; }
 
 .btn { appearance: none; border: 0; cursor: pointer; font: 600 14px/20px var(--font-body), sans-serif; height: 52px; padding: 0 var(--sp-lg); border-radius: var(--r-md); display: flex; align-items: center; justify-content: center; gap: var(--sp-xs); text-decoration: none; width: 100%; }
 .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.btn.primary { background: var(--bg-inverse); color: var(--text-inverse); }
+.btn.primary { background: var(--bg-action); color: var(--text-on-action); }
 .btn.secondary { background: var(--bg-subtle); color: var(--text-primary); }
 .btn.outline { background: transparent; color: var(--text-primary); border: 1px solid var(--border-strong); }
 .btn.text { background: transparent; color: var(--text-primary); height: 44px; }
@@ -140,7 +166,7 @@ a { color: inherit; }
 .qr { flex: none; padding: 12px; background: var(--white); border: 1px solid var(--border-default); border-radius: var(--r-md); line-height: 0; }
 
 .amount-row { display: flex; align-items: center; gap: var(--sp-md); }
-.copy-circle { appearance: none; border: 0; cursor: pointer; width: 44px; height: 44px; flex: none; border-radius: var(--r-full); background: var(--bg-inverse); color: var(--text-inverse); display: grid; place-items: center; }
+.copy-circle { appearance: none; border: 0; cursor: pointer; width: 44px; height: 44px; flex: none; border-radius: var(--r-full); background: var(--bg-action); color: var(--text-on-action); display: grid; place-items: center; }
 
 .timeline { display: flex; flex-direction: column; gap: var(--sp-md); padding-top: var(--sp-xs); }
 .timeline .step { display: flex; align-items: center; gap: var(--sp-md); }
