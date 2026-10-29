@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: ceeneet-api
+    runtime: node
+    plan: free
+    rootDir: ceenit-api
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: NETWORK
+        value: nile
+      - key: DATABASE_URL
+        sync: false
+      - key: MONIERATE_API_KEY
+        sync: false
+      - key: PAYSTACK_SECRET_KEY
+        sync: false
+      - key: PAYSTACK_PLAN_SELLER
+        sync: false
+      - key: PAYSTACK_PLAN_BUSINESS
+        sync: false
+      - key: TRONGRID_API_KEY
+        sync: false
+      - key: PUBLIC_BASE_URL
+        sync: false
