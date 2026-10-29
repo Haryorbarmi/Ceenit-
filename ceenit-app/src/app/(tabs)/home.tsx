@@ -8,6 +8,7 @@ import { Icon } from '@/components/Icon';
 import { Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
 import { TxnRow } from '@/components/TxnRow';
+import { useHideBalance } from '@/lib/privacy';
 import { useRate } from '@/lib/rate';
 import { formatNaira, formatUsdt } from '@/lib/format';
 import { useInbox } from '@/state/inbox';
@@ -31,6 +32,7 @@ const greeting = () => {
 
 export default function Home() {
   const rate = useRate();
+  const { hidden, toggle: toggleHidden } = useHideBalance();
   const { inbox, refresh: refreshInbox } = useInbox();
   const { me, refreshMe } = useSession();
   const { txns, invoices, requests, totals, loading, refresh } = useLinks();
@@ -66,21 +68,26 @@ export default function Home() {
           <LinearGradient colors={['#000000', '#1a0b3d', '#4c1d95']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.summary}>
             <View pointerEvents="none" style={styles.glowA} />
             <View pointerEvents="none" style={styles.glowB} />
-            <Text variant="bodySmall" tone="muted">Total received</Text>
+            <View style={styles.cardTop}>
+              <Text variant="bodySmall" tone="muted">Total received</Text>
+              <Pressable onPress={toggleHidden} hitSlop={12} style={({ pressed }) => pressed && { opacity: 0.6 }} accessibilityRole="button" accessibilityLabel={hidden ? 'Show balance' : 'Hide balance'}>
+                <Icon name={hidden ? 'eye-off' : 'eye'} size={22} tone="inverse" />
+              </Pressable>
+            </View>
             <View style={{ gap: spacing.xxs }}>
-              <Text variant="h1" tone="inverse">{formatUsdt(totals.received)} USDT</Text>
+              <Text variant="h1" tone="inverse">{hidden ? '••••••' : formatUsdt(totals.received)} USDT</Text>
               <Text variant="caption" tone="muted">
-                {totals.received > 0 ? `≈ ${formatNaira(totals.received, rate)} · naira is an estimate` : 'Your payments will show here'}
+                {totals.received > 0 ? `≈ ${hidden ? '₦••••••' : formatNaira(totals.received, rate)} · naira is an estimate` : 'Your payments will show here'}
               </Text>
             </View>
             <View style={styles.stats}>
               <View style={{ flex: 1, gap: spacing.xxs }}>
                 <Text variant="caption" tone="muted">Paid</Text>
-                <Text variant="h3" tone="inverse">{totals.paid}</Text>
+                <Text variant="h3" tone="inverse">{hidden ? '••' : totals.paid}</Text>
               </View>
               <View style={{ flex: 1, gap: spacing.xxs }}>
                 <Text variant="caption" tone="muted">Pending</Text>
-                <Text variant="h3" tone="inverse">{totals.pending}</Text>
+                <Text variant="h3" tone="inverse">{hidden ? '••' : totals.pending}</Text>
               </View>
             </View>
           </LinearGradient>
@@ -158,6 +165,7 @@ const styles = StyleSheet.create({
   summary: { borderRadius: radius.xl, padding: spacing.lg, gap: spacing.md, overflow: 'hidden' },
   glowA: { position: 'absolute', top: -60, right: -40, width: 180, height: 180, borderRadius: 90, backgroundColor: tone.accent.solid, opacity: 0.35 },
   glowB: { position: 'absolute', bottom: -70, left: -50, width: 150, height: 150, borderRadius: 75, backgroundColor: hues.purple[400], opacity: 0.18 },
+  cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   stats: { flexDirection: 'row', gap: spacing.lg, paddingTop: spacing.md, borderTopWidth: 1, borderTopColor: '#ffffff33' },
   free: { borderWidth: 1, borderColor: color.borderDefault, borderRadius: radius.lg, padding: spacing.md, gap: spacing.sm },
   freeRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
